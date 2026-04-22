@@ -1,0 +1,43 @@
+package ge.project.dpasystem.mapper;
+
+import ge.project.dpasystem.dto.ClientDto;
+import ge.project.dpasystem.model.Client;
+import org.springframework.stereotype.Component;
+
+
+@Component
+public class ClientMapper {
+
+   public Client toEntity(ClientDto clientDto){
+
+        return Client.builder()
+                .firstName(clientDto.firstName())
+                .lastName(clientDto.lastName())
+                .sex(clientDto.sex())
+                .email(clientDto.email())
+                .password(clientDto.password())
+                .appointments(clientDto.appointments())
+                .dateOfBirth(clientDto.dateOfBirth())
+                .reviews(clientDto.reviews())
+                .phoneNumber(clientDto.phoneNumber())
+                .build();
+    }
+
+
+ public  ClientDto toDto(Client client){
+    return ClientDto.builder()
+            .firstName(client.getFirstName())
+            .lastName(client.getLastName())
+            .sex(client.getSex())
+            .dateOfBirth(client.getDateOfBirth())
+            .password(client.getPassword())
+            .reviews(client.getReviews())
+            .appointments(client.getAppointments())
+            .email(client.getEmail())
+            .phoneNumber(client.getPhoneNumber())
+            .build();
+
+    }
+
+
+}

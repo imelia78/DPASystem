@@ -2,9 +2,7 @@ package ge.project.dpasystem.model;
 
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -15,9 +13,11 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "clients")
-@NoArgsConstructor
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Client {
 
     private static final int MALE_RETIREMENT_AGE = 65;
@@ -46,7 +46,7 @@ public class Client {
     private Sex sex;
 
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String phoneNumber;
 
 
