@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ClientMapper {
 
-   public Client toEntity(ClientDto clientDto){
+    public Client toEntity(ClientDto clientDto) {
 
         return Client.builder()
                 .firstName(clientDto.firstName())
@@ -24,20 +24,26 @@ public class ClientMapper {
     }
 
 
- public  ClientDto toDto(Client client){
-    return ClientDto.builder()
-            .firstName(client.getFirstName())
-            .lastName(client.getLastName())
-            .sex(client.getSex())
-            .dateOfBirth(client.getDateOfBirth())
-            .password(client.getPassword())
-            .reviews(client.getReviews())
-            .appointments(client.getAppointments())
-            .email(client.getEmail())
-            .phoneNumber(client.getPhoneNumber())
-            .build();
+    public ClientDto toDto(Client client) {
+        return ClientDto.builder()
+                .firstName(client.getFirstName())
+                .lastName(client.getLastName())
+                .sex(client.getSex())
+                .dateOfBirth(client.getDateOfBirth())
+                .password(client.getPassword())
+                .reviews(client.getReviews())
+                .appointments(client.getAppointments())
+                .email(client.getEmail())
+                .phoneNumber(client.getPhoneNumber())
+                .build();
 
     }
 
+    public void updateEntity(Client client, ClientDto clientDto) {
+        client.setFirstName(clientDto.firstName());
+        client.setLastName(clientDto.lastName());
+        client.setDateOfBirth(clientDto.dateOfBirth());
+        client.setPhoneNumber(clientDto.phoneNumber());
+    }
 
 }

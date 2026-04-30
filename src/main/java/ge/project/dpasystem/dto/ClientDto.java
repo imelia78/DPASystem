@@ -10,9 +10,11 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 @Builder
 public record ClientDto(
+        UUID id,
         String firstName,
         String lastName,
         String password,

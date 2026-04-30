@@ -6,14 +6,13 @@ import ge.project.dpasystem.mapper.ClientMapper;
 import ge.project.dpasystem.model.Client;
 import ge.project.dpasystem.repository.ClientRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 
@@ -35,7 +34,7 @@ public class ClientServiceImpl implements ClientService {
                 ? filter.pageNumber() : 0; // first page
         var pageable = Pageable.ofSize(pageSize).withPage(pageNumber);
 
-        return clientRepository.findAllClientsByPages(pageable).stream().map(clientMapper::toDto).toList();
+        return clientRepository.findAllBy(pageable).stream().map(clientMapper::toDto).toList();
     }
 
     @Override
@@ -54,30 +53,58 @@ public class ClientServiceImpl implements ClientService {
     @Transactional
     @Override
     public ClientDto updateClient(ClientDto clientDto) { //TODO написать правильную логику обновления сущности
-        Client updatedClient = clientRepository.findClientByEmail(clientDto.email()).orElseThrow(() ->
+        Client updatedClient = clientRepository.findByEmail(clientDto.email()).orElseThrow(() ->
                 new EntityNotFoundException("Client with email: " + clientDto.email() + " not found!"));
+
         log.info("Updating client with email: {}", clientDto.email());
 
-        return clientMapper.
+        clientMapper.updateEntity(updatedClient, clientDto);
+
+        return clientMapper.toDto(updatedClient);
     }
 
     @Override
     public List<ClientDto> findClientsByFirstNameAndLastName(String firstName, String lastName) {
-        return clientRepository.findClientByFirstNameAndLastName(firstName, lastName)
+        return clientRepository.findByFirstNameAndLastName(firstName, lastName)
                 .stream().map(clientMapper::toDto).toList();
     }
 
     @Override
     public ClientDto findClientByEmail(String email) {
-        Client foundClient = clientRepository.findClientByEmail(email).orElseThrow(EntityNotFoundException::new);
+        Client foundClient = clientRepository.findByEmail(email).orElseThrow(EntityNotFoundException::new);
         return clientMapper.toDto(foundClient);
     }
 
     @Override
+    @Transactional
+    public ClientDto updateEmail(UUID id, String email) {
+        var client = clientRepository.findClientById(id).orElseThrow(EntityNotFoundException::new);
+
+        if (clientRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("Email already in use");
+        }
+        client.setEmail(email);
+        return clientMapper.toDto(client);
+    }
+
+    @Override
+    @Transactional
+    public ClientDto updatePhoneNumber(UUID id, String phoneNumber) {
+        var client = clientRepository.findClientById(id).orElseThrow(EntityNotFoundException::new);
+
+        if (clientRepository.existsByPhoneNumber(phoneNumber)) {
+            throw new IllegalArgumentException("Phone number already in use");
+        }
+
+        client.setPhoneNumber(phoneNumber);
+        return clientMapper.toDto(client);
+    }
+
+    @Override
     public void deleteClientByEmail(String email) {
-        Client prepareForDeleting = clientRepository.findClientByEmail(email).orElseThrow(EntityNotFoundException::new);
+        Client preparedForDeletingClient = clientRepository.findByEmail(email).orElseThrow(EntityNotFoundException::new);
         log.info("Client with email {} ready for deleting", email);
-        Client deletedClient = clientRepository.deleteByEmail(email);
+        Client deletedClient = clientRepository.deleteByEmail(email).orElseThrow(UnsupportedOperationException::new);
 
     }
 }

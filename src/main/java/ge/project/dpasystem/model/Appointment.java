@@ -2,7 +2,7 @@ package ge.project.dpasystem.model;
 
 
 import jakarta.persistence.*;
-
+import lombok.*;
 
 
 import java.math.BigDecimal;
@@ -10,7 +10,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Builder
+@Getter
+@Setter
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "appointments",
         uniqueConstraints = @UniqueConstraint(columnNames = {"doctor_id", "appointmentDateTime"})
         )
