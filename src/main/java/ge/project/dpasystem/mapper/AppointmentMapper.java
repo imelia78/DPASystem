@@ -21,24 +21,25 @@ public class AppointmentMapper {
                 .review(appointment.getReview())
                 .doctor(appointment.getDoctor())
                 .client(appointment.getClient())
+                .description(appointment.getDescription())
                 .build();
 
     }
 
 
     public Appointment toAppointment(AppointmentDto appointmentDto) {
-
         return Appointment.builder()
-                .appointmentDateTime(appointmentDto.appointmentDateTime())
-                .appointmentAddress(appointmentDto.appointmentAddress())
-                .price(appointmentDto.price())
-                .appointmentDuration(appointmentDto.appointmentDuration())
-                .appointmentStatus(appointmentDto.appointmentStatus())
-                .client(appointmentDto.client())
-                .doctor(appointmentDto.doctor())
-                .review(appointmentDto.review())
-                .build();
-
+            .id(appointmentDto.id())              // ← add this line
+            .appointmentDateTime(appointmentDto.appointmentDateTime())
+            .appointmentAddress(appointmentDto.appointmentAddress())
+            .price(appointmentDto.price())
+            .appointmentDuration(appointmentDto.appointmentDuration())
+            .appointmentStatus(appointmentDto.appointmentStatus())
+            .client(appointmentDto.client())
+            .doctor(appointmentDto.doctor())
+            .review(appointmentDto.review())
+            .description(appointmentDto.description())
+            .build();
     }
 
     public void updateAppointment(Appointment appointment, AppointmentDto appointmentDto) {
@@ -51,6 +52,7 @@ public class AppointmentMapper {
         appointment.setPrice(appointmentDto.price());
         appointment.setAppointmentDuration(appointmentDto.appointmentDuration());
         appointment.setReview(appointmentDto.review());
+        appointment.setDescription(appointmentDto.description());
 
     }
 

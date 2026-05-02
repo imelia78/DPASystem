@@ -20,6 +20,6 @@ public record AppointmentDto(
     AppointmentStatus appointmentStatus,
     Doctor doctor,
     Review review,
-    String appointmentAddress
-) {
-}
+    String appointmentAddress,
+    String description       // ← add this
+) {}

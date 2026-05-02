@@ -16,27 +16,27 @@ public class Doctor {
     public UUID id;
 
     @Column(nullable = false)
-    private String firstName;
+    String firstName;
 
     @Column(nullable = false)
-    private String lastName;
+    String lastName;
 
     @Column(nullable = false)
-    private String specialization;
+    String specialization;
 
     @Column(nullable = false)
-    private Integer experience;
+    Integer experience;
 
     @Column(nullable = false)
-    private Integer age;
+    Integer age;
 
 
     @OneToMany(mappedBy = "doctor")
-    private List<Appointment> appointments;
+    List<Appointment> appointments;
 
 
     @OneToMany(mappedBy = "doctor", fetch = FetchType.LAZY)
-    private List<Review> reviews;
+    List<Review> reviews;
 
 
 }

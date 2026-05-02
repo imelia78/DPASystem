@@ -104,7 +104,7 @@ public class ClientServiceImpl implements ClientService {
     public void deleteClientByEmail(String email) {
         Client preparedForDeletingClient = clientRepository.findByEmail(email).orElseThrow(EntityNotFoundException::new);
         log.info("Client with email {} ready for deleting", email);
-        Client deletedClient = clientRepository.deleteByEmail(email).orElseThrow(UnsupportedOperationException::new);
+        Client deletedClient = clientRepository.deleteByEmail(email);
 
     }
 }
