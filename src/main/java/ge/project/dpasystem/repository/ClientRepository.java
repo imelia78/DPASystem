@@ -16,9 +16,7 @@ public interface ClientRepository extends JpaRepository<Client, UUID> {
 
     Optional<Client> findClientByAppointments(List<Appointment> appointments);
 
-    Page<Client> findAllBy(
-            Pageable pageable
-    );
+    Page<Client> findAllBy(Pageable pageable);
 
     List<Client> findByFirstNameAndLastName(String firstName, String lastName);
 

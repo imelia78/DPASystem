@@ -30,8 +30,8 @@ public class ClientController {
         return ResponseEntity.ok(clientService.findAllClientsByPages(filter));
     }
 
-    @GetMapping("/{email}") // очень сомнительно
-    public ResponseEntity<ClientDto> getClientByEmail(@PathVariable String email) {
+    @GetMapping()
+    public ResponseEntity<ClientDto> getClientByEmail(@RequestParam String email) {
         var client = clientService.findClientByEmail(email);
         return ResponseEntity.ok(client);
 

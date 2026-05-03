@@ -1,10 +1,9 @@
 package ge.project.dpasystem.controller;
 
-import ge.project.dpasystem.dto.AddressDto;
 import ge.project.dpasystem.dto.AppointmentDto;
+import ge.project.dpasystem.dto.AppointmentRequestDto;
 import ge.project.dpasystem.dto.UpdateAppointmentDateTime;
 import ge.project.dpasystem.dto.UpdateAppointmentStatus;
-import ge.project.dpasystem.mapper.AppointmentMapper;
 import ge.project.dpasystem.model.AppointmentStatus;
 import ge.project.dpasystem.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
@@ -74,8 +73,8 @@ public class AppointmentController {
 
 
     @PostMapping
-    public ResponseEntity<AppointmentDto> createAppointment(@RequestBody AppointmentDto appointmentDto){
-        return ResponseEntity.ok(appointmentService.createAppointment(appointmentDto));
+    public ResponseEntity<AppointmentDto> createAppointment(@RequestBody AppointmentRequestDto request){
+        return ResponseEntity.ok(appointmentService.createAppointment(request));
     }
 
 
@@ -97,6 +96,7 @@ public class AppointmentController {
     private ResponseEntity<AppointmentDto> updateAppointment(@PathVariable UUID id, @RequestBody AppointmentDto  appointmentDto){
         return ResponseEntity.ok(appointmentService.updateAppointment(appointmentDto));
     }
+
 
 
 }

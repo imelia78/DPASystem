@@ -2,12 +2,20 @@ package ge.project.dpasystem.model;
 
 import jakarta.persistence.*;
 import jakarta.persistence.criteria.CriteriaBuilder;
+import lombok.*;
 
 import java.util.List;
 import java.util.UUID;
 
+
+
 @Entity
 @Table(name = "doctors")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 public class Doctor {
 
 
@@ -25,10 +33,13 @@ public class Doctor {
     private String specialization;
 
     @Column(nullable = false)
-    private Integer experience;
+    private Integer experience; //сменить на  String professionalDescription?
 
     @Column(nullable = false)
     private Integer age;
+
+    @Column(nullable = false,unique = true)
+    private String email;
 
 
     @OneToMany(mappedBy = "doctor")

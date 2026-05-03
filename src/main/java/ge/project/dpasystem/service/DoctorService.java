@@ -1,29 +1,28 @@
 package ge.project.dpasystem.service;
 
 import ge.project.dpasystem.controller.RequestFilter;
-import ge.project.dpasystem.dto.ClientDto;
 import ge.project.dpasystem.dto.DoctorDto;
-import ge.project.dpasystem.model.Doctor;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface DoctorService {
-    List<DoctorDto> findAllClientsByPages(RequestFilter filter);
 
-    DoctorDto findById(UUID uuid);
+    List<DoctorDto> findAllDoctorsByPages(RequestFilter filter);
 
-    DoctorDto createClient(DoctorDto doctorDto);
+    DoctorDto findDoctorById(UUID uuid);
 
-    ClientDto updateClient(DoctorDto doctorDto);
+    DoctorDto createDoctor(DoctorDto doctorDto);
 
-    List<ClientDto> findClientsByFirstNameAndLastName(String firstName, String lastName);
+    DoctorDto updateDoctor(DoctorDto doctorDto);
 
-    ClientDto findClientByEmail(String email);
+    List<DoctorDto> findDoctorsByFirstNameAndLastName(String firstName, String lastName);
 
-    ClientDto updateEmail(UUID id, String email);
+    DoctorDto findDoctorByEmail(String email);
 
-    ClientDto updatePhoneNumber(UUID id, String phoneNumber);
+    DoctorDto updateEmail(UUID id, String email);
+
+    //DoctorDto updatePhoneNumber(UUID id, String phoneNumber);
 
     void deleteByEmail(String email);
 }

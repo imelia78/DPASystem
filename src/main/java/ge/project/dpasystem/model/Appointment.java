@@ -1,11 +1,13 @@
 package ge.project.dpasystem.model;
 
 
+import ge.project.dpasystem.dto.AddressDto;
 import jakarta.persistence.*;
 import lombok.*;
 
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -26,7 +28,7 @@ public class Appointment {
 
     private LocalDateTime appointmentDateTime;
 
-    private Integer appointmentDuration;
+    private Integer duration;
 
     private BigDecimal price;
 
@@ -48,6 +50,7 @@ public class Appointment {
 
     //private Discount discount;
 
-    private String appointmentAddress;
+    @Embedded
+    private Address appointmentAddress;
 
 }
