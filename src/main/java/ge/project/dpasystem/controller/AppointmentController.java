@@ -1,9 +1,6 @@
 package ge.project.dpasystem.controller;
 
-import ge.project.dpasystem.dto.AppointmentDto;
-import ge.project.dpasystem.dto.AppointmentRequestDto;
-import ge.project.dpasystem.dto.UpdateAppointmentDateTime;
-import ge.project.dpasystem.dto.UpdateAppointmentStatus;
+import ge.project.dpasystem.dto.*;
 import ge.project.dpasystem.model.AppointmentStatus;
 import ge.project.dpasystem.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +32,7 @@ public class AppointmentController {
 // TODO Нужно ли менять типь возращаемого значения в сигнатуре на pageable?
 
 
-    @GetMapping("/clients/{id}/appointments")
+    @GetMapping("/clients/{id}")
     public ResponseEntity<List<AppointmentDto>> getAppointmentsByClient(
             @PathVariable UUID id,
             @RequestParam("pageSize") Integer pageSize,
@@ -46,11 +43,7 @@ public class AppointmentController {
 
     }
 
-   /* @GetMapping()
-    public ResponseEntity<List<AppointmentDto>> getAppointmentsByAddress(@RequestBody AddressDto address) {
-        return ResponseEntity.ok(appointmentService.findAppointmentsByAddress());
 
-    }*/
 
     @GetMapping("/status")
     public ResponseEntity<List<AppointmentDto>> getAppointmentByStatus(@RequestParam AppointmentStatus status) {
@@ -71,32 +64,36 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.findAppointmentsByDateRange(start, end));
     }
 
+    @GetMapping("/address")
+    public ResponseEntity<List<AppointmentDto>> findAppointmentByAddress(
+            @ModelAttribute AddressDto addressDto
+    ) {
+        return ResponseEntity.ok(appointmentService.findAppointmentsByAddress(addressDto));
+    }
+
 
     @PostMapping
-    public ResponseEntity<AppointmentDto> createAppointment(@RequestBody AppointmentRequestDto request){
+    public ResponseEntity<AppointmentDto> createAppointment(@RequestBody AppointmentRequestDto request) {
         return ResponseEntity.ok(appointmentService.createAppointment(request));
     }
 
 
     @PatchMapping("/{id}/status")
-    private ResponseEntity<AppointmentDto> updateAppointmentStatus(@PathVariable UUID id, @RequestBody UpdateAppointmentStatus request){
-        return  ResponseEntity.ok(appointmentService.updateAppointmentStatus(id,request));
+    private ResponseEntity<AppointmentDto> updateAppointmentStatus(@PathVariable UUID id, @RequestBody UpdateAppointmentStatus request) {
+        return ResponseEntity.ok(appointmentService.updateAppointmentStatus(id, request));
 
     }
 
     @PatchMapping("{id}/datetime")
-    private ResponseEntity<AppointmentDto> updateAppointmentDateOrTime(@PathVariable UUID id, @RequestBody UpdateAppointmentDateTime request){
-        return ResponseEntity.ok(appointmentService.updateAppointmentDateOrTime(id,request));
+    private ResponseEntity<AppointmentDto> updateAppointmentDateOrTime(@PathVariable UUID id, @RequestBody UpdateAppointmentDateTime request) {
+        return ResponseEntity.ok(appointmentService.updateAppointmentDateOrTime(id, request));
     }
-
-
 
 
     @PutMapping("{id}")
-    private ResponseEntity<AppointmentDto> updateAppointment(@PathVariable UUID id, @RequestBody AppointmentDto  appointmentDto){
+    private ResponseEntity<AppointmentDto> updateAppointment(@PathVariable UUID id, @RequestBody AppointmentDto appointmentDto) {
         return ResponseEntity.ok(appointmentService.updateAppointment(appointmentDto));
     }
-
 
 
 }

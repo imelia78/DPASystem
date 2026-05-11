@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,11 +33,20 @@ public class Doctor {
     @Column(nullable = false)
     private String specialization;
 
-    @Column(nullable = false)
-    private Integer experience; //сменить на  String professionalDescription?
 
     @Column(nullable = false)
-    private Integer age;
+    private String professionalDescription;
+
+
+    @Enumerated(EnumType.STRING)
+    private Sex sex;
+
+    @Column(nullable = false)
+    private LocalDate dateOfBirth;
+
+    @Column(nullable = false, unique = true)
+    private String phoneNumber;
+
 
     @Column(nullable = false,unique = true)
     private String email;

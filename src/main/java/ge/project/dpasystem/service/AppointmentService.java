@@ -24,10 +24,12 @@ public interface AppointmentService {
 
     AppointmentDto updateAppointmentDateOrTime(UUID id, UpdateAppointmentDateTime request);
 
-   List <AppointmentDto> findAppointmentsByDateRange(LocalDateTime start, LocalDateTime end);
+   List<AppointmentDto> findAppointmentsByDateRange(LocalDateTime start, LocalDateTime end);
 
     List<AppointmentDto> findAppointmentsByStatus(AppointmentStatus status);
 
     List<AppointmentDto> findAppointmentsByAddress(AddressDto addressDto);
+
+    void processAppointment(UUID id);
 
 }

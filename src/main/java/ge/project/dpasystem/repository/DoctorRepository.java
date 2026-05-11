@@ -18,9 +18,16 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
 
     List<Doctor> findByFirstNameAndLastName(String firstName, String lastName);
 
+    boolean existsByPhoneNumber(String phoneNumber);
+
+    boolean existsByEmail(String email);
+
     Optional<Doctor> findById(UUID id);
 
     Optional<Doctor> findByEmail(String email);
+
+
+    // List<Doctor> findClosestByFreeTime(LocalDateTime time);
 
     List<Doctor> findAllBySpecialization(String specialization, Pageable pageable);
 

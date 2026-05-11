@@ -84,6 +84,7 @@ public class ClientServiceImpl implements ClientService {
             throw new IllegalArgumentException("Email already in use");
         }
         client.setEmail(email);
+        log.info("Email has been changed for client {}", id);
         return clientMapper.toDto(client);
     }
 
@@ -97,6 +98,7 @@ public class ClientServiceImpl implements ClientService {
         }
 
         client.setPhoneNumber(phoneNumber);
+        log.info("Phone number has been changed for client{}", id);
         return clientMapper.toDto(client);
     }
 
@@ -105,6 +107,15 @@ public class ClientServiceImpl implements ClientService {
         Client preparedForDeletingClient = clientRepository.findByEmail(email).orElseThrow(EntityNotFoundException::new);
         log.info("Client with email {} ready for deleting", email);
         Client deletedClient = clientRepository.deleteByEmail(email).orElseThrow(UnsupportedOperationException::new);
+        log.info("Client with email {} successfully deleted", email);
 
+    }
+
+    @Override
+    public void deleteClientById(UUID id) {
+        var client = clientRepository.findClientById(id);
+        log.info("Client with id {} ready for deleting", id);
+        clientRepository.deleteById(id);
+        log.info("Client with id {} successfully deleted", id);
     }
 }

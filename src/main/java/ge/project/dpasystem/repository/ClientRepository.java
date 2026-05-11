@@ -26,6 +26,8 @@ public interface ClientRepository extends JpaRepository<Client, UUID> {
 
     Optional<Client> deleteByEmail(String email);
 
+    void deleteById(UUID id);
+
     boolean existsByEmail(String email);
 
     boolean existsByPhoneNumber(String phoneNumber);

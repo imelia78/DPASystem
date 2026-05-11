@@ -4,7 +4,6 @@ import ge.project.dpasystem.model.Appointment;
 import ge.project.dpasystem.model.AppointmentStatus;
 
 import ge.project.dpasystem.model.Client;
-import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -32,7 +31,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
 
     List<Appointment> findAllByDoctor_Id(UUID doctorId, Pageable pageable); // All appointments related with particular doctor
 
-    List<Appointment> findAllByAppointmentStatus(AppointmentStatus appointmentStatus, Pageable pageable);
+    List<Appointment> findAllByAppointmentStatus(AppointmentStatus appointmentStatus, Pageable pageable); //!!!! Pageable
 
     List<Appointment> findAllByAppointmentDateTime(LocalDateTime appointmentDateTime);// как лучше передавать дату?
 
@@ -53,7 +52,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
                             AND (:street IS NULL or a.appointmentAddress.street = :street)
                     """
     )
-    List<Appointment> findAppointmentsByAddressFiltred(
+    List<Appointment> findAppointmentsByAddressMixed(
             @Param("city") String city,
             @Param("district") String district,
             @Param("street") String street

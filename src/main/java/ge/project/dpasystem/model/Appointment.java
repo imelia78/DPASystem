@@ -19,13 +19,14 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "appointments",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"doctor_id", "appointmentDateTime"})
+        uniqueConstraints = @UniqueConstraint(columnNames = {"doctor_id", "appointment_date_time"})
         )
 public class Appointment {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(name = "appointment_date_time")
     private LocalDateTime appointmentDateTime;
 
     private Integer duration;

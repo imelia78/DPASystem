@@ -60,38 +60,35 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         bookingConflictsExclusion(doctor.getId(), client.getId(), request.dateTime(), request.duration());
 
-            var appointment = Appointment.builder()
-                    .appointmentDateTime(request.dateTime())
-                    .duration(request.duration())
-                    .client(client)
-                    .appointmentStatus(AppointmentStatus.CREATED)
-                    .doctor(doctor)
-                    .appointmentAddress(request.address())
-                    .build();
+        var appointment = Appointment.builder()
+                .appointmentDateTime(request.dateTime())
+                .duration(request.duration())
+                .client(client)
+                .appointmentStatus(AppointmentStatus.CREATED)
+                .doctor(doctor)
+                .appointmentAddress(request.address())
+                .build();
 
         var saved = appointmentRepository.save(appointment);
-        return   appointmentMapper.toDto(saved);
+        return appointmentMapper.toDto(saved);
     }
 
 
-
-
-    public void bookingConflictsExclusion(UUID doctorId, UUID clientId, LocalDateTime start, int duration){
+    public void bookingConflictsExclusion(UUID doctorId, UUID clientId, LocalDateTime start, int duration) {
 
         LocalDateTime end = start.plusMinutes(duration);
 
-        boolean doctorIsBusy = appointmentRepository.existsByDoctorIdAndAppointmentDateTimeBetween(doctorId,start,end);
+        boolean doctorIsBusy = appointmentRepository.existsByDoctorIdAndAppointmentDateTimeBetween(doctorId, start, end);
 
-        if(doctorIsBusy){
+        if (doctorIsBusy) {
             throw new IllegalStateException("Doctor has been busy at this time");
         }
 
-        boolean clientIsBusy = appointmentRepository.existsByClientIdAndAppointmentDateTimeBetween(clientId,start,end);
-        if(clientIsBusy){
+        boolean clientIsBusy = appointmentRepository.existsByClientIdAndAppointmentDateTimeBetween(clientId, start, end);
+        if (clientIsBusy) {
             throw new IllegalStateException("Client already has an appointment");
         }
     }
-
 
 
     @Override
@@ -124,7 +121,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Transactional
     public AppointmentDto updateAppointmentDateOrTime(UUID id, UpdateAppointmentDateTime request) {  //rescheduling
 
-        if (request.dateTime().isBefore(LocalDateTime.now())){
+        if (request.dateTime().isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("date has already passed!"); // Сделать на уровне валидации через аннотации?
         }
 
@@ -135,22 +132,22 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         LocalDateTime start = request.dateTime();
 
-        bookingConflictsExclusion(doctor.getId(), client.getId(),start, request.duration());
+        bookingConflictsExclusion(doctor.getId(), client.getId(), start, request.duration());
 
-         appointment.setAppointmentDateTime(request.dateTime());
-         appointment.setDuration(request.duration());
+        appointment.setAppointmentDateTime(request.dateTime());
+        appointment.setDuration(request.duration());
 
-       return appointmentMapper.toDto(appointment);
+        return appointmentMapper.toDto(appointment);
 
     }
 
     @Override
     public List<AppointmentDto> findAppointmentsByDateRange(LocalDateTime start, LocalDateTime end) {
-        if(start.isAfter(end)){
+        if (start.isAfter(end)) {
             throw new IllegalArgumentException("Invalid date range");
         }
 
-        var appointments = appointmentRepository.findAppointmentsByAppointmentDateTimeBetween(start,end);
+        var appointments = appointmentRepository.findAppointmentsByAppointmentDateTimeBetween(start, end);
 
         return appointments.stream().map(appointmentMapper::toDto).toList();
     }
@@ -163,9 +160,18 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public List<AppointmentDto> findAppointmentsByAddress(AddressDto addressDto) {
-        var appointments = appointmentRepository.findAppointmentsByAddressFiltred(
-                addressDto.city(),addressDto.district(),addressDto.street());
+        var appointments = appointmentRepository.findAppointmentsByAddressMixed(
+                addressDto.city(), addressDto.district(), addressDto.street());
         return appointments.stream().map(appointmentMapper::toDto).toList();
+
+    }
+
+    @Override
+    public void processAppointment(UUID id) {
+        var appointment = appointmentRepository.findAppointmentById(id).orElseThrow(EntityNotFoundException::new);
+        appointment.setAppointmentStatus(AppointmentStatus.COMPLETED);
+        log.info("Appointment with id {} completed successfully", id);
+
 
     }
 }

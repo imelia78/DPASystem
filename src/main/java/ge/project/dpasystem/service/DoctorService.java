@@ -16,13 +16,17 @@ public interface DoctorService {
 
     DoctorDto updateDoctor(DoctorDto doctorDto);
 
+    DoctorDto updateProfessionalDescription(UUID id, String professionalDescription);
+
     List<DoctorDto> findDoctorsByFirstNameAndLastName(String firstName, String lastName);
 
     DoctorDto findDoctorByEmail(String email);
 
     DoctorDto updateEmail(UUID id, String email);
 
-    //DoctorDto updatePhoneNumber(UUID id, String phoneNumber);
+    DoctorDto updatePhoneNumber(UUID id, String phoneNumber);
 
     void deleteByEmail(String email);
+
+    void deleteById(UUID id);
 }

@@ -25,4 +25,6 @@ public interface ClientService {
     ClientDto updatePhoneNumber(UUID id, String phoneNumber);
 
     void deleteClientByEmail(String email);
+
+    void deleteClientById(UUID id);
 }

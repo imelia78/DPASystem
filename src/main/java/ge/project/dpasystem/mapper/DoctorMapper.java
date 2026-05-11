@@ -14,10 +14,12 @@ public class DoctorMapper {
                 .id(doctorDto.id())
                 .firstName(doctorDto.firstName())
                 .lastName(doctorDto.lastName())
-                .age(doctorDto.age())
+                .professionalDescription(doctorDto.professionalDescription())
+                .sex(doctorDto.sex())
+                .dateOfBirth(doctorDto.dateOfBirth())
+                .phoneNumber(doctorDto.phoneNumber())
                 .email(doctorDto.email())
                 .specialization(doctorDto.specialization())
-                .experience(doctorDto.experience())
                 .appointments(doctorDto.appointments())
                 .reviews(doctorDto.reviews())
                 .build();
@@ -28,24 +30,25 @@ public class DoctorMapper {
                 .id(doctor.getId())
                 .firstName(doctor.getFirstName())
                 .lastName(doctor.getLastName())
+                .sex(doctor.getSex())
+                .phoneNumber(doctor.getPhoneNumber())
                 .specialization(doctor.getSpecialization())
-                .experience(doctor.getExperience())
-                .age(doctor.getAge())
+                .professionalDescription(doctor.getProfessionalDescription())
+                .dateOfBirth(doctor.getDateOfBirth())
                 .email(doctor.getEmail())
                 .appointments(doctor.getAppointments())
                 .reviews(doctor.getReviews())
                 .build();
     }
 
+
     public void updateEntity(Doctor doctor, DoctorDto doctorDto) {
-        Doctor.builder()
-                .specialization(doctorDto.specialization())
-                .experience(doctorDto.experience())
-                .age(doctorDto.age())
-                .email(doctorDto.email())
-                .appointments(doctorDto.appointments())
-                .reviews(doctorDto.reviews())
-                .build();
+        doctor.setProfessionalDescription(doctorDto.professionalDescription());
+        doctor.setProfessionalDescription(doctorDto.professionalDescription());
+        doctor.setSpecialization(doctorDto.specialization());
+        doctor.setPhoneNumber(doctorDto.phoneNumber());
+        doctor.setEmail(doctorDto.email());
+        doctor.setDateOfBirth(doctorDto.dateOfBirth());
     }
 
 }

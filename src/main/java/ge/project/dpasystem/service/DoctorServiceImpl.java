@@ -18,7 +18,7 @@ import java.util.UUID;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class DoctorServiceImpl implements DoctorService{
+public class DoctorServiceImpl implements DoctorService {
 
     private final DoctorRepository doctorRepository;
     private final DoctorMapper doctorMapper;
@@ -54,14 +54,14 @@ public class DoctorServiceImpl implements DoctorService{
     public DoctorDto updateDoctor(DoctorDto doctorDto) {
         var doctor = doctorRepository.findById(doctorDto.id()).orElseThrow(EntityNotFoundException::new);
 
-        doctorMapper.updateEntity(doctor,doctorDto);
+        doctorMapper.updateEntity(doctor, doctorDto);
         return doctorMapper.toDto(doctor);
 
     }
 
     @Override
     public List<DoctorDto> findDoctorsByFirstNameAndLastName(String firstName, String lastName) {
-        var doctors = doctorRepository.findByFirstNameAndLastName(firstName,lastName);
+        var doctors = doctorRepository.findByFirstNameAndLastName(firstName, lastName);
         return doctors.stream().map(doctorMapper::toDto).toList();
 
     }
@@ -74,22 +74,47 @@ public class DoctorServiceImpl implements DoctorService{
     }
 
     @Override
+    @Transactional
     public DoctorDto updateEmail(UUID id, String email) {
         var doctor = doctorRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        if (doctorRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("Email already in use");
+        }
         doctor.setEmail(email);
         return doctorMapper.toDto(doctor);
     }
 
-   /* @Override
+    @Override
+    public DoctorDto updateProfessionalDescription(UUID id, String professionalDescription) {
+        var doctor = doctorRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        doctor.setProfessionalDescription(professionalDescription);
+        return doctorMapper.toDto(doctor);
+    }
+
+
+    @Override
+    @Transactional
     public DoctorDto updatePhoneNumber(UUID id, String phoneNumber) {
         var doctor = doctorRepository.findById(id).orElseThrow(EntityNotFoundException::new);
-        doctor.set
-    }*/
+        if (doctorRepository.existsByPhoneNumber(phoneNumber)) {
+            throw new IllegalArgumentException("Phone already in use");
+        }
+        doctor.setPhoneNumber(phoneNumber);
+        return doctorMapper.toDto(doctor);
+    }
+
 
     @Override
     public void deleteByEmail(String email) {
-    var doctor = doctorRepository.findByEmail(email).orElseThrow(EntityNotFoundException::new);
-    doctorRepository.deleteById(doctor.getId());
+        var doctor = doctorRepository.findByEmail(email).orElseThrow(EntityNotFoundException::new);
+        doctorRepository.deleteById(doctor.getId());
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        var doctor = doctorRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        doctorRepository.deleteById(id);
+
     }
 
 }
