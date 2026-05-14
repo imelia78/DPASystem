@@ -2,15 +2,15 @@ package ge.project.dpasystem.model;
 
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "reviews")
+@Builder
+@AllArgsConstructor
 @Setter
 @Getter
 @NoArgsConstructor

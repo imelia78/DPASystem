@@ -1,11 +1,14 @@
 package ge.project.dpasystem.model;
 
 
+import ge.project.dpasystem.dto.AddressDto;
 import jakarta.persistence.*;
 import lombok.*;
 
 
 import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -16,16 +19,17 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "appointments",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"doctor_id", "appointmentDateTime"})
+        uniqueConstraints = @UniqueConstraint(columnNames = {"doctor_id", "appointment_date_time"})
         )
 public class Appointment {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(name = "appointment_date_time")
     private LocalDateTime appointmentDateTime;
 
-    private Integer appointmentDuration;
+    private Integer duration;
 
     private BigDecimal price;
 
@@ -47,7 +51,7 @@ public class Appointment {
 
     //private Discount discount;
 
-    private String appointmentAddress;
-    private String description;
+    @Embedded
+    private Address appointmentAddress;
 
 }

@@ -1,9 +1,6 @@
 package ge.project.dpasystem.dto;
 
-import ge.project.dpasystem.model.AppointmentStatus;
-import ge.project.dpasystem.model.Client;
-import ge.project.dpasystem.model.Doctor;
-import ge.project.dpasystem.model.Review;
+import ge.project.dpasystem.model.*;
 import lombok.Builder;
 
 import java.math.BigDecimal;
@@ -20,6 +17,6 @@ public record AppointmentDto(
     AppointmentStatus appointmentStatus,
     Doctor doctor,
     Review review,
-    String appointmentAddress,
-    String description       // ← add this
-) {}
+    Address address
+) {
+}

@@ -2,12 +2,21 @@ package ge.project.dpasystem.model;
 
 import jakarta.persistence.*;
 import jakarta.persistence.criteria.CriteriaBuilder;
+import lombok.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+
+
 @Entity
 @Table(name = "doctors")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 public class Doctor {
 
 
@@ -16,27 +25,39 @@ public class Doctor {
     public UUID id;
 
     @Column(nullable = false)
-    String firstName;
+    private String firstName;
 
     @Column(nullable = false)
-    String lastName;
+    private String lastName;
 
     @Column(nullable = false)
-    String specialization;
+    private String specialization;
+
 
     @Column(nullable = false)
-    Integer experience;
+    private String professionalDescription;
+
+
+    @Enumerated(EnumType.STRING)
+    private Sex sex;
 
     @Column(nullable = false)
-    Integer age;
+    private LocalDate dateOfBirth;
+
+    @Column(nullable = false, unique = true)
+    private String phoneNumber;
+
+
+    @Column(nullable = false,unique = true)
+    private String email;
 
 
     @OneToMany(mappedBy = "doctor")
-    List<Appointment> appointments;
+    private List<Appointment> appointments;
 
 
     @OneToMany(mappedBy = "doctor", fetch = FetchType.LAZY)
-    List<Review> reviews;
+    private List<Review> reviews;
 
 
 }

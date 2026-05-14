@@ -1,9 +1,8 @@
 package ge.project.dpasystem.service;
 
 import ge.project.dpasystem.controller.RequestFilter;
-import ge.project.dpasystem.dto.AppointmentDto;
-import ge.project.dpasystem.dto.UpdateAppointmentDateTime;
-import ge.project.dpasystem.dto.UpdateAppointmentStatus;
+import ge.project.dpasystem.dto.*;
+import ge.project.dpasystem.model.Address;
 import ge.project.dpasystem.model.AppointmentStatus;
 
 import java.time.LocalDate;
@@ -17,7 +16,7 @@ public interface AppointmentService {
 
     List<AppointmentDto> findAllAppointmentsByClientId(UUID clientId, RequestFilter filter);
 
-    AppointmentDto createAppointment(AppointmentDto appointmentDto);
+    AppointmentDto createAppointment(AppointmentRequestDto request);
 
     AppointmentDto updateAppointment(AppointmentDto appointmentDto);
 
@@ -25,10 +24,12 @@ public interface AppointmentService {
 
     AppointmentDto updateAppointmentDateOrTime(UUID id, UpdateAppointmentDateTime request);
 
-   List <AppointmentDto> findAppointmentsByDateRange(LocalDateTime start, LocalDateTime end);
+   List<AppointmentDto> findAppointmentsByDateRange(LocalDateTime start, LocalDateTime end);
 
     List<AppointmentDto> findAppointmentsByStatus(AppointmentStatus status);
 
-    List<AppointmentDto> findAppointmentsByAddress(String address);
+    List<AppointmentDto> findAppointmentsByAddress(AddressDto addressDto);
+
+    void processAppointment(UUID id);
 
 }

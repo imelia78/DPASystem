@@ -21,7 +21,7 @@ public class ClientController {
 
     private final ClientService clientService;
 
-    @GetMapping
+    @GetMapping()
     public ResponseEntity<List<ClientDto>> getAllClients(
             @RequestParam("pageSize") Integer pageSize,
             @RequestParam("pageNumber") Integer pageNumber
@@ -30,8 +30,8 @@ public class ClientController {
         return ResponseEntity.ok(clientService.findAllClientsByPages(filter));
     }
 
-    @GetMapping("/{email}") // очень сомнительно
-    public ResponseEntity<ClientDto> getClientByEmail(@PathVariable String email) {
+    @GetMapping(params = "email")
+    public ResponseEntity<ClientDto> getClientByEmail(@RequestParam String email) {
         var client = clientService.findClientByEmail(email);
         return ResponseEntity.ok(client);
 
@@ -57,7 +57,7 @@ public class ClientController {
 
 
     @PatchMapping("/{id}/phone")
-    public ResponseEntity<ClientDto> updateClientPhoneNum(@PathVariable UUID id, @RequestBody UpdatePhoneDto phoneDto) {
+    public ResponseEntity<ClientDto> updateClientPhoneNumber(@PathVariable UUID id, @RequestBody UpdatePhoneDto phoneDto) {
 
         var changedClient = clientService.updatePhoneNumber(id, phoneDto.phoneNumber());
 
@@ -71,6 +71,12 @@ public class ClientController {
         var changedClient = clientService.updateEmail(id, emailDto.email());
 
         return ResponseEntity.ok(changedClient);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteClientById(@PathVariable UUID id) {
+        clientService.deleteClientById(id);
+        return ResponseEntity.ok("Client has been deleted successfully");
     }
 
 
