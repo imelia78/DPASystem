@@ -3,6 +3,7 @@ package ge.project.dpasystem.controller;
 import ge.project.dpasystem.dto.*;
 import ge.project.dpasystem.model.AppointmentStatus;
 import ge.project.dpasystem.service.AppointmentService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "appointment_methods")
 @RestController
 @RequestMapping("/api/v1/appointments")
 @RequiredArgsConstructor
@@ -33,7 +35,7 @@ public class AppointmentController {
 
 
     @GetMapping("/clients/{id}")
-    public ResponseEntity<List<AppointmentDto>> getAppointmentsByClient(
+    public ResponseEntity<List<AppointmentDto>> getAppointmentsByClientId(
             @PathVariable UUID id,
             @RequestParam("pageSize") Integer pageSize,
             @RequestParam("pageNumber") Integer pageNumber

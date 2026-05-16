@@ -5,6 +5,7 @@ import ge.project.dpasystem.dto.ClientDto;
 import ge.project.dpasystem.dto.UpdateEmailDto;
 import ge.project.dpasystem.dto.UpdatePhoneDto;
 import ge.project.dpasystem.service.ClientService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "client_methods")
 @RestController
 @RequestMapping("/api/v1/clients")
 @RequiredArgsConstructor
