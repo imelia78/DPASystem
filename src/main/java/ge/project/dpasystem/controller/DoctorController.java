@@ -5,6 +5,7 @@ import ge.project.dpasystem.dto.UpdatePhoneDto;
 import ge.project.dpasystem.dto.UpdateProfessionalDescriptionDto;
 import ge.project.dpasystem.mapper.DoctorMapper;
 import ge.project.dpasystem.service.DoctorService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
+@Tag(name = "doctor_methods")
 @RestController
 @RequestMapping("/api/v1/doctors")
 @RequiredArgsConstructor

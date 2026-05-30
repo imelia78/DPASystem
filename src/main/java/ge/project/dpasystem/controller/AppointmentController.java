@@ -3,6 +3,7 @@ package ge.project.dpasystem.controller;
 import ge.project.dpasystem.dto.*;
 import ge.project.dpasystem.model.AppointmentStatus;
 import ge.project.dpasystem.service.AppointmentService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "appointment_methods")
 @RestController
 @RequestMapping("/api/v1/appointments")
 @RequiredArgsConstructor
@@ -33,7 +35,7 @@ public class AppointmentController {
 
 
     @GetMapping("/clients/{id}")
-    public ResponseEntity<List<AppointmentDto>> getAppointmentsByClient(
+    public ResponseEntity<List<AppointmentDto>> getAppointmentsByClientId(
             @PathVariable UUID id,
             @RequestParam("pageSize") Integer pageSize,
             @RequestParam("pageNumber") Integer pageNumber
@@ -42,7 +44,6 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.findAllAppointmentsByClientId(id, filter));
 
     }
-
 
 
     @GetMapping("/status")
@@ -96,6 +97,14 @@ public class AppointmentController {
     ResponseEntity<AppointmentDto> updateAppointment(@PathVariable UUID id,
         @RequestBody AppointmentDto appointmentDto) {
         return ResponseEntity.ok(appointmentService.updateAppointment(appointmentDto));
+    }
+
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteAppointmentById(@PathVariable UUID id) {
+        appointmentService.deleteAppointmentById(id);
+        return ResponseEntity.ok("Appointment canceled successfully!");
+
     }
 
 

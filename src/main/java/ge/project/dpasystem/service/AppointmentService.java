@@ -30,6 +30,8 @@ public interface AppointmentService {
 
     List<AppointmentDto> findAppointmentsByAddress(AddressDto addressDto);
 
+    void deleteAppointmentById(UUID id);
+
     void processAppointment(UUID id);
 
 }
