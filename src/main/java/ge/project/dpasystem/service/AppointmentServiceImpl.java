@@ -167,6 +167,18 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
+    @Transactional
+    public void deleteAppointmentById(UUID id) {
+        var appointment = appointmentRepository.findAppointmentById(id).orElseThrow(EntityNotFoundException::new);
+        if (appointment.getAppointmentStatus() == AppointmentStatus.COMPLETED) {
+            throw new IllegalArgumentException("Invalid action for completed appointment!");
+        }
+        appointmentRepository.deleteById(id);
+        log.info("Appointment with id {} deleted successfully!", id);
+
+    }
+
+    @Override
     public void processAppointment(UUID id) {
         var appointment = appointmentRepository.findAppointmentById(id).orElseThrow(EntityNotFoundException::new);
         appointment.setAppointmentStatus(AppointmentStatus.COMPLETED);

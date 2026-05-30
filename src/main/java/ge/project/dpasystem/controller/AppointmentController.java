@@ -46,7 +46,6 @@ public class AppointmentController {
     }
 
 
-
     @GetMapping("/status")
     public ResponseEntity<List<AppointmentDto>> getAppointmentByStatus(@RequestParam AppointmentStatus status) {
         return ResponseEntity.ok(appointmentService.findAppointmentsByStatus(status));
@@ -87,14 +86,22 @@ public class AppointmentController {
     }
 
     @PatchMapping("{id}/datetime")
-    private ResponseEntity<AppointmentDto> updateAppointmentDateOrTime(@PathVariable UUID id, @RequestBody UpdateAppointmentDateTime request) {
+    public ResponseEntity<AppointmentDto> updateAppointmentDateOrTime(@PathVariable UUID id, @RequestBody UpdateAppointmentDateTime request) {
         return ResponseEntity.ok(appointmentService.updateAppointmentDateOrTime(id, request));
     }
 
 
-    @PutMapping("{id}")
-    private ResponseEntity<AppointmentDto> updateAppointment(@PathVariable UUID id, @RequestBody AppointmentDto appointmentDto) {
+    @PutMapping("/{id}")
+    public ResponseEntity<AppointmentDto> updateAppointment(@PathVariable UUID id, @RequestBody AppointmentDto appointmentDto) {
         return ResponseEntity.ok(appointmentService.updateAppointment(appointmentDto));
+    }
+
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteAppointmentById(@PathVariable UUID id) {
+        appointmentService.deleteAppointmentById(id);
+        return ResponseEntity.ok("Appointment canceled successfully!");
+
     }
 
 
