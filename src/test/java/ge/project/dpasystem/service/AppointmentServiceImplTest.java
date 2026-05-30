@@ -2,13 +2,17 @@ package ge.project.dpasystem.service;
 
 import ge.project.dpasystem.controller.RequestFilter;
 import ge.project.dpasystem.dto.AppointmentDto;
+import ge.project.dpasystem.dto.AppointmentRequestDto;
 import ge.project.dpasystem.dto.UpdateAppointmentDateTime;
 import ge.project.dpasystem.dto.UpdateAppointmentStatus;
 import ge.project.dpasystem.mapper.AppointmentMapper;
 import ge.project.dpasystem.model.Appointment;
 import ge.project.dpasystem.model.AppointmentStatus;
+import ge.project.dpasystem.model.Client;
+import ge.project.dpasystem.model.Doctor;
 import ge.project.dpasystem.repository.AppointmentRepository;
-import jakarta.persistence.EntityNotFoundException;
+import ge.project.dpasystem.repository.ClientRepository;
+import ge.project.dpasystem.repository.DoctorRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -30,6 +34,12 @@ class AppointmentServiceImplTest {
 
     @Mock
     private AppointmentRepository appointmentRepository;
+
+    @Mock
+    private DoctorRepository doctorRepository;
+
+    @Mock
+    private ClientRepository clientRepository;
 
     @Mock
     private AppointmentMapper appointmentMapper;
@@ -58,19 +68,69 @@ class AppointmentServiceImplTest {
         List<AppointmentDto> result = appointmentService.findAllAppointmentsByPages(filter);
 
         assertEquals(1, result.size());
-        assertEquals(appointmentDto, result.get(0));
+        assertEquals(appointmentDto, result.getFirst());
     }
 
     @Test
     void testCreateAppointment() {
-        AppointmentDto appointmentDto = mock(AppointmentDto.class);
+        AppointmentRequestDto appointmentRequest = mock(AppointmentRequestDto.class);
+
+        UUID doctorId = UUID.randomUUID();
+        UUID clientId = UUID.randomUUID();
+
+        LocalDateTime appointmentTime = LocalDateTime.now().plusDays(1);
+
+        // --- DTO mocks ---
+        var doctorDto = mock(ge.project.dpasystem.dto.DoctorDto.class);
+        var clientDto = mock(ge.project.dpasystem.dto.ClientDto.class);
+
+        when(doctorDto.id()).thenReturn(doctorId);
+        when(clientDto.id()).thenReturn(clientId);
+
+        when(appointmentRequest.doctor()).thenReturn(doctorDto);
+        when(appointmentRequest.client()).thenReturn(clientDto);
+
+        // IMPORTANT: fix null start issue
+        when(appointmentRequest.dateTime()).thenReturn(appointmentTime);
+        when(appointmentRequest.duration()).thenReturn(60);
+
+        // --- domain objects ---
+        Doctor doctor = new Doctor();
+        doctor.setId(doctorId);
+
+        Client client = new Client();
+        client.setId(clientId);
+
         Appointment appointment = new Appointment();
-        when(appointmentMapper.toAppointment(appointmentDto)).thenReturn(appointment);
-        when(appointmentRepository.save(appointment)).thenReturn(appointment);
-        when(appointmentMapper.toDto(appointment)).thenReturn(appointmentDto);
+        AppointmentDto appointmentDto = mock(AppointmentDto.class);
 
-        AppointmentDto result = appointmentService.createAppointment(appointmentDto);
+        // --- repository stubs ---
+        when(doctorRepository.findById(doctorId))
+            .thenReturn(Optional.of(doctor));
 
+        when(clientRepository.findClientById(clientId))
+            .thenReturn(Optional.of(client));
+
+        // IMPORTANT: avoid conflict logic breaking the test
+        when(appointmentRepository.existsByDoctorIdAndAppointmentDateTimeBetween(
+            any(), any(), any()))
+            .thenReturn(false);
+
+        when(appointmentRepository.existsByClientIdAndAppointmentDateTimeBetween(
+            any(), any(), any()))
+            .thenReturn(false);
+
+        when(appointmentRepository.save(any(Appointment.class)))
+            .thenReturn(appointment);
+
+        when(appointmentMapper.toDto(appointment))
+            .thenReturn(appointmentDto);
+
+        // --- service call ---
+        AppointmentDto result = appointmentService.createAppointment(appointmentRequest);
+
+        // --- assertions ---
+        assertNotNull(result);
         assertEquals(appointmentDto, result);
     }
 
@@ -114,9 +174,19 @@ class AppointmentServiceImplTest {
         UpdateAppointmentDateTime request = mock(UpdateAppointmentDateTime.class);
         LocalDateTime futureDate = LocalDateTime.now().plusDays(1);
         when(request.dateTime()).thenReturn(futureDate);
+        when(request.duration()).thenReturn(60);
 
         Appointment appointment = new Appointment();
+        Doctor doctor = new Doctor();
+        doctor.setId(UUID.randomUUID());
+        Client client = new Client();
+        client.setId(UUID.randomUUID());
+        appointment.setDoctor(doctor);
+        appointment.setClient(client);
+
         when(appointmentRepository.findAppointmentById(id)).thenReturn(Optional.of(appointment));
+        when(appointmentRepository.existsByDoctorIdAndAppointmentDateTimeBetween(any(), any(), any())).thenReturn(false);
+        when(appointmentRepository.existsByClientIdAndAppointmentDateTimeBetween(any(), any(), any())).thenReturn(false);
 
         AppointmentDto appointmentDto = mock(AppointmentDto.class);
         when(appointmentMapper.toDto(appointment)).thenReturn(appointmentDto);
@@ -139,6 +209,6 @@ class AppointmentServiceImplTest {
         List<AppointmentDto> result = appointmentService.findAppointmentsByDateRange(start, end);
 
         assertEquals(1, result.size());
-        assertEquals(appointmentDto, result.get(0));
+        assertEquals(appointmentDto, result.getFirst());
     }
 }

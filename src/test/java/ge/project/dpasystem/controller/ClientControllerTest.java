@@ -99,13 +99,13 @@ class ClientControllerTest {
     }
 
     @Test
-    void testUpdateClientPhoneNum() {
+    void testUpdateClientPhoneNumber() {
         UUID id = UUID.randomUUID();
         UpdatePhoneDto phoneDto = new UpdatePhoneDto("1234567890");
         ClientDto clientDto = new ClientDto();
         when(clientService.updatePhoneNumber(id, phoneDto.phoneNumber())).thenReturn(clientDto);
 
-        ResponseEntity<ClientDto> response = clientController.updateClientPhoneNum(id, phoneDto);
+        ResponseEntity<ClientDto> response = clientController.updateClientPhoneNumber(id, phoneDto);
 
         assertNotNull(response.getBody());
         assertEquals(clientDto, response.getBody());

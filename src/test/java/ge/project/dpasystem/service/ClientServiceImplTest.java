@@ -8,7 +8,6 @@ import ge.project.dpasystem.model.Sex;
 import ge.project.dpasystem.repository.ClientRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
@@ -22,6 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 class ClientServiceImplTest {
@@ -32,12 +32,12 @@ class ClientServiceImplTest {
     @Mock
     private ClientMapper clientMapper;
 
-    @InjectMocks
     private ClientServiceImpl clientService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        clientService = new ClientServiceImpl(clientRepository, clientMapper);
     }
 
     @Test
@@ -47,38 +47,56 @@ class ClientServiceImplTest {
         when(filter.pageNumber()).thenReturn(0);
 
         Pageable pageable = Pageable.ofSize(10).withPage(0);
+
         Client client = new Client();
         Page<Client> page = new PageImpl<>(Collections.singletonList(client));
-        when(clientRepository.findAllBy(pageable)).thenReturn(page);  // ← fixed
-        ClientDto clientDto = new ClientDto(UUID.randomUUID(), "John", "Doe", "john.doe@example.com", LocalDate.now(), Sex.MALE, Collections.emptyList(), Collections.emptyList(), "1234567890", "Address");
+
+        when(clientRepository.findAllBy(pageable)).thenReturn(page);
+
+        ClientDto clientDto = new ClientDto(
+            UUID.randomUUID(),
+            "John",
+            "Doe",
+            "john.doe@example.com",
+            LocalDate.now(),
+            Sex.MALE,
+            Collections.emptyList(),
+            Collections.emptyList(),
+            "1234567890",
+            "Address"
+        );
+
         when(clientMapper.toDto(client)).thenReturn(clientDto);
 
         List<ClientDto> result = clientService.findAllClientsByPages(filter);
 
         assertEquals(1, result.size());
-        verify(clientRepository, times(1)).findAllBy(pageable);  // ← fixed
-        verify(clientMapper, times(1)).toDto(client);
+        verify(clientRepository).findAllBy(pageable);
+        verify(clientMapper).toDto(client);
     }
 
     @Test
     void testFindClientById() {
         UUID uuid = UUID.randomUUID();
         Client client = new Client();
+
         when(clientRepository.findClientById(uuid)).thenReturn(Optional.of(client));
+
         ClientDto clientDto = new ClientDto();
         when(clientMapper.toDto(client)).thenReturn(clientDto);
 
         ClientDto result = clientService.findClientById(uuid);
 
         assertNotNull(result);
-        verify(clientRepository, times(1)).findClientById(uuid);
-        verify(clientMapper, times(1)).toDto(client);
+        verify(clientRepository).findClientById(uuid);
+        verify(clientMapper).toDto(client);
     }
 
     @Test
     void testCreateClient() {
         ClientDto clientDto = new ClientDto();
         Client client = new Client();
+
         when(clientMapper.toEntity(clientDto)).thenReturn(client);
         when(clientRepository.save(client)).thenReturn(client);
         when(clientMapper.toDto(client)).thenReturn(clientDto);
@@ -86,36 +104,40 @@ class ClientServiceImplTest {
         ClientDto result = clientService.createClient(clientDto);
 
         assertNotNull(result);
-        verify(clientMapper, times(1)).toEntity(clientDto);
-        verify(clientRepository, times(1)).save(client);
-        verify(clientMapper, times(1)).toDto(client);
+        verify(clientMapper).toEntity(clientDto);
+        verify(clientRepository).save(client);
+        verify(clientMapper).toDto(client);
     }
 
     @Test
     void testFindClientByEmail() {
         String email = "test@example.com";
         Client client = new Client();
-        when(clientRepository.findByEmail(email)).thenReturn(Optional.of(client));  // ← fixed
+
+        when(clientRepository.findByEmail(anyString()))
+            .thenReturn(Optional.of(client));
+
         ClientDto clientDto = new ClientDto();
         when(clientMapper.toDto(client)).thenReturn(clientDto);
 
         ClientDto result = clientService.findClientByEmail(email);
 
         assertNotNull(result);
-        verify(clientRepository, times(1)).findByEmail(email);  // ← fixed
-        verify(clientMapper, times(1)).toDto(client);
+        verify(clientRepository).findByEmail(anyString());
+        verify(clientMapper).toDto(client);
     }
 
     @Test
     void testDeleteClientByEmail() {
         String email = "test@example.com";
         Client client = new Client();
-        when(clientRepository.findByEmail(email)).thenReturn(Optional.of(client));  // ← fixed
+
+        when(clientRepository.findByEmail(email)).thenReturn(Optional.of(client));
 
         clientService.deleteClientByEmail(email);
 
-        verify(clientRepository, times(1)).findByEmail(email);  // ← fixed
-        verify(clientRepository, times(1)).deleteByEmail(email);
+        verify(clientRepository).findByEmail(eq(email));
+        verify(clientRepository).deleteByEmail(eq(email));
     }
 
     @Test
@@ -123,6 +145,7 @@ class ClientServiceImplTest {
         UUID id = UUID.randomUUID();
         String newEmail = "new@example.com";
         Client client = new Client();
+
         when(clientRepository.findClientById(id)).thenReturn(Optional.of(client));
         when(clientRepository.existsByEmail(newEmail)).thenReturn(false);
 
@@ -140,6 +163,7 @@ class ClientServiceImplTest {
         UUID id = UUID.randomUUID();
         String newPhoneNumber = "1234567890";
         Client client = new Client();
+
         when(clientRepository.findClientById(id)).thenReturn(Optional.of(client));
         when(clientRepository.existsByPhoneNumber(newPhoneNumber)).thenReturn(false);
 

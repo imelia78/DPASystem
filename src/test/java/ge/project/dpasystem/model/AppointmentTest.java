@@ -13,9 +13,10 @@ class AppointmentTest {
     @Test
     void testAppointmentModel() {
         Appointment appointment = new Appointment();
-        appointment.setDescription("Test Appointment");
+        UUID id = UUID.randomUUID();
+        appointment.setId(id);
 
-        assertEquals("Test Appointment", appointment.getDescription());
+        assertEquals(id, appointment.getId());
     }
 
     @Test
@@ -27,31 +28,28 @@ class AppointmentTest {
         Client client = new Client();
         Doctor doctor = new Doctor();
         Review review = new Review();
-        String address = "123 Main St";
-        String description = "General check-up";
+        Address address = new Address();
 
         Appointment appointment = Appointment.builder()
-                .id(id)
-                .appointmentDateTime(dateTime)
-                .appointmentDuration(duration)
-                .price(price)
-                .client(client)
-                .doctor(doctor)
-                .review(review)
-                .appointmentAddress(address)
-                .description(description)
-                .build();
+            .id(id)
+            .appointmentDateTime(dateTime)
+            .duration(duration)
+            .price(price)
+            .client(client)
+            .doctor(doctor)
+            .review(review)
+            .appointmentAddress(address)
+            .build();
 
         assertNotNull(appointment);
         assertEquals(id, appointment.getId());
         assertEquals(dateTime, appointment.getAppointmentDateTime());
-        assertEquals(duration, appointment.getAppointmentDuration());
+        assertEquals(duration, appointment.getDuration());
         assertEquals(price, appointment.getPrice());
         assertEquals(client, appointment.getClient());
         assertEquals(doctor, appointment.getDoctor());
         assertEquals(review, appointment.getReview());
         assertEquals(address, appointment.getAppointmentAddress());
-        assertEquals(description, appointment.getDescription());
     }
 
     @Test
@@ -64,27 +62,24 @@ class AppointmentTest {
         Client client = new Client();
         Doctor doctor = new Doctor();
         Review review = new Review();
-        String address = "456 Elm St";
-        String description = "Follow-up visit";
+        Address address = new Address();
 
         appointment.setId(id);
         appointment.setAppointmentDateTime(dateTime);
-        appointment.setAppointmentDuration(duration);
+        appointment.setDuration(duration);
         appointment.setPrice(price);
         appointment.setClient(client);
         appointment.setDoctor(doctor);
         appointment.setReview(review);
         appointment.setAppointmentAddress(address);
-        appointment.setDescription(description);
 
         assertEquals(id, appointment.getId());
         assertEquals(dateTime, appointment.getAppointmentDateTime());
-        assertEquals(duration, appointment.getAppointmentDuration());
+        assertEquals(duration, appointment.getDuration());
         assertEquals(price, appointment.getPrice());
         assertEquals(client, appointment.getClient());
         assertEquals(doctor, appointment.getDoctor());
         assertEquals(review, appointment.getReview());
         assertEquals(address, appointment.getAppointmentAddress());
-        assertEquals(description, appointment.getDescription());
     }
 }

@@ -25,8 +25,8 @@ class ClientTest {
     @Test
     void testComputeAge() {
         Client client = Client.builder()
-                .dateOfBirth(LocalDate.of(1990, 5, 1))
-                .build();
+            .dateOfBirth(LocalDate.of(1990, 5, 1))
+            .build();
 
         int age = client.computeAge();
 
@@ -36,9 +36,9 @@ class ClientTest {
     @Test
     void testRetireeVerificationMale() {
         Client client = Client.builder()
-                .dateOfBirth(LocalDate.of(1950, 1, 1))
-                .sex(Sex.MALE)
-                .build();
+            .dateOfBirth(LocalDate.of(1950, 1, 1))
+            .sex(Sex.MALE)
+            .build();
 
         assertTrue(client.retireeVerification());
     }
@@ -46,9 +46,9 @@ class ClientTest {
     @Test
     void testRetireeVerificationFemale() {
         Client client = Client.builder()
-                .dateOfBirth(LocalDate.of(1960, 1, 1))
-                .sex(Sex.FEMALE)
-                .build();
+            .dateOfBirth(LocalDate.of(1960, 1, 1))
+            .sex(Sex.FEMALE)
+            .build();
 
         assertTrue(client.retireeVerification());
     }
@@ -56,9 +56,9 @@ class ClientTest {
     @Test
     void testRetireeVerificationNotRetired() {
         Client client = Client.builder()
-                .dateOfBirth(LocalDate.of(2000, 1, 1))
-                .sex(Sex.MALE)
-                .build();
+            .dateOfBirth(LocalDate.of(2000, 1, 1))
+            .sex(Sex.MALE)
+            .build();
 
         assertFalse(client.retireeVerification());
     }
@@ -67,15 +67,15 @@ class ClientTest {
     void testClientBuilder() {
         UUID id = UUID.randomUUID();
         Client client = Client.builder()
-                .id(id)
-                .firstName("John")
-                .lastName("Doe")
-                .email("john.doe@example.com")
-                .password("password123")
-                .phoneNumber("1234567890")
-                .dateOfBirth(LocalDate.of(1990, 5, 1))
-                .sex(Sex.MALE)
-                .build();
+            .id(id)
+            .firstName("John")
+            .lastName("Doe")
+            .email("john.doe@example.com")
+            .password("password123")
+            .phoneNumber("1234567890")
+            .dateOfBirth(LocalDate.of(1990, 5, 1))
+            .sex(Sex.MALE)
+            .build();
 
         assertNotNull(client);
         assertEquals(id, client.getId());

@@ -49,10 +49,10 @@ class ClientMapperTest {
         client.setPhoneNumber("1234567890");
 
         ClientDto clientDto = ClientDto.builder()
-                .firstName("Jane")
-                .lastName("Smith")
-                .phoneNumber("0987654321")
-                .build();
+            .firstName("Jane")
+            .lastName("Smith")
+            .phoneNumber("0987654321")
+            .build();
 
         clientMapper.updateEntity(client, clientDto);
 

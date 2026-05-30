@@ -1,6 +1,7 @@
 package ge.project.dpasystem.controller;
 
 import ge.project.dpasystem.dto.AppointmentDto;
+import ge.project.dpasystem.dto.AppointmentRequestDto;
 import ge.project.dpasystem.dto.UpdateAppointmentDateTime;
 import ge.project.dpasystem.dto.UpdateAppointmentStatus;
 import ge.project.dpasystem.model.AppointmentStatus;
@@ -86,13 +87,14 @@ class AppointmentControllerTest {
     @Test
     void testCreateAppointment() {
         // Use mock — no need to construct the record with all fields in a controller test
+        AppointmentRequestDto appointmentRequest = mock(AppointmentRequestDto.class);
         AppointmentDto appointmentDto = mock(AppointmentDto.class);
-        when(appointmentService.createAppointment(appointmentDto)).thenReturn(appointmentDto);
+        when(appointmentService.createAppointment(appointmentRequest)).thenReturn(appointmentDto);
 
-        ResponseEntity<AppointmentDto> response = appointmentController.createAppointment(appointmentDto);
+        ResponseEntity<AppointmentDto> response = appointmentController.createAppointment(appointmentRequest);
 
         assertEquals(appointmentDto, response.getBody());
-        verify(appointmentService, times(1)).createAppointment(appointmentDto);
+        verify(appointmentService, times(1)).createAppointment(appointmentRequest);
     }
 
     @Test
@@ -111,7 +113,7 @@ class AppointmentControllerTest {
     @Test
     void testUpdateAppointmentDateOrTime() {
         UUID appointmentId = UUID.randomUUID();
-        UpdateAppointmentDateTime request = new UpdateAppointmentDateTime(LocalDateTime.now().plusDays(1));
+        UpdateAppointmentDateTime request = new UpdateAppointmentDateTime(LocalDateTime.now().plusDays(1), 60);
         AppointmentDto appointmentDto = mock(AppointmentDto.class);
         when(appointmentService.updateAppointmentDateOrTime(appointmentId, request)).thenReturn(appointmentDto);
 

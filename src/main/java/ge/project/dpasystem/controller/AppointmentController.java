@@ -79,19 +79,22 @@ public class AppointmentController {
 
 
     @PatchMapping("/{id}/status")
-    private ResponseEntity<AppointmentDto> updateAppointmentStatus(@PathVariable UUID id, @RequestBody UpdateAppointmentStatus request) {
+    ResponseEntity<AppointmentDto> updateAppointmentStatus(@PathVariable UUID id,
+        @RequestBody UpdateAppointmentStatus request) {
         return ResponseEntity.ok(appointmentService.updateAppointmentStatus(id, request));
 
     }
 
     @PatchMapping("{id}/datetime")
-    private ResponseEntity<AppointmentDto> updateAppointmentDateOrTime(@PathVariable UUID id, @RequestBody UpdateAppointmentDateTime request) {
+    ResponseEntity<AppointmentDto> updateAppointmentDateOrTime(@PathVariable UUID id,
+        @RequestBody UpdateAppointmentDateTime request) {
         return ResponseEntity.ok(appointmentService.updateAppointmentDateOrTime(id, request));
     }
 
 
     @PutMapping("{id}")
-    private ResponseEntity<AppointmentDto> updateAppointment(@PathVariable UUID id, @RequestBody AppointmentDto appointmentDto) {
+    ResponseEntity<AppointmentDto> updateAppointment(@PathVariable UUID id,
+        @RequestBody AppointmentDto appointmentDto) {
         return ResponseEntity.ok(appointmentService.updateAppointment(appointmentDto));
     }
 
