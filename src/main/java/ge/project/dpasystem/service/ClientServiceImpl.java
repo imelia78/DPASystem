@@ -2,6 +2,7 @@ package ge.project.dpasystem.service;
 
 import ge.project.dpasystem.controller.RequestFilter;
 import ge.project.dpasystem.dto.ClientDto;
+import ge.project.dpasystem.dto.auth.RegisterClientRequest;
 import ge.project.dpasystem.mapper.ClientMapper;
 import ge.project.dpasystem.model.Client;
 import ge.project.dpasystem.repository.ClientRepository;
@@ -44,8 +45,9 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public ClientDto createClient(ClientDto clientDTO) {
-        var createdClient = clientMapper.toEntity(clientDTO);
+    public ClientDto createClient(RegisterClientRequest request, String keycloakId) {
+        var createdClient = clientRepository.save(clientMapper.toEntity(request));
+        createdClient.setKeycloakUserId(keycloakId);
         return clientMapper.toDto(clientRepository.save(createdClient));
 
     }
@@ -73,6 +75,12 @@ public class ClientServiceImpl implements ClientService {
     public ClientDto findClientByEmail(String email) {
         Client foundClient = clientRepository.findByEmail(email).orElseThrow(EntityNotFoundException::new);
         return clientMapper.toDto(foundClient);
+    }
+
+    @Override
+    public ClientDto findClientByKeycloakUserId(String keycloakId) {
+        var client = clientRepository.findByKeycloakUserId(keycloakId).orElseThrow(EntityNotFoundException::new);
+        return clientMapper.toDto(client);
     }
 
     @Override

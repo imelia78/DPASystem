@@ -2,6 +2,7 @@ package ge.project.dpasystem.repository;
 
 import ge.project.dpasystem.model.Appointment;
 import ge.project.dpasystem.model.Client;
+import ge.project.dpasystem.model.Doctor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,6 +24,8 @@ public interface ClientRepository extends JpaRepository<Client, UUID> {
     Optional<Client> findClientById(UUID id);
 
     Optional<Client> findByEmail(String email);
+
+    Optional<Client> findByKeycloakUserId(String keycloakUserId);
 
     Optional<Client> deleteByEmail(String email);
 

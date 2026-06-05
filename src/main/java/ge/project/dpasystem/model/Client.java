@@ -28,6 +28,9 @@ public class Client {
     private UUID id;
 
     @Column(nullable = false)
+    private String keycloakUserId;
+
+    @Column(nullable = false)
     private String firstName;
 
     @Column(nullable = false)

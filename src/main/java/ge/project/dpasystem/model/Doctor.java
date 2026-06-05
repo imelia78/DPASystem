@@ -1,7 +1,6 @@
 package ge.project.dpasystem.model;
 
 import jakarta.persistence.*;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -24,32 +23,50 @@ public class Doctor {
     @GeneratedValue(strategy = GenerationType.UUID)
     public UUID id;
 
+
+    @Column(name = "keycloak_user_id")
+    private String keycloakUserId;
+
+
     @Column(nullable = false)
     private String firstName;
 
     @Column(nullable = false)
     private String lastName;
 
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Sex sex;
+
+
+    @Column(nullable = false)
+    private LocalDate dateOfBirth;
+
     @Column(nullable = false)
     private String specialization;
+
+    @Column(nullable = false, unique = true)
+    private String phoneNumber;
+
+    @Column(nullable = false,unique = true)
+    private String email;
+
+    @Column(nullable = false)
+    private String password;
+
 
 
     @Column(nullable = false)
     private String professionalDescription;
 
 
-    @Enumerated(EnumType.STRING)
-    private Sex sex;
-
-    @Column(nullable = false)
-    private LocalDate dateOfBirth;
-
     @Column(nullable = false, unique = true)
-    private String phoneNumber;
+    private String stateCertificateNumber;
 
 
-    @Column(nullable = false,unique = true)
-    private String email;
+    @Enumerated(EnumType.STRING)
+    private  VerificationStatus verificationStatus;
 
 
     @OneToMany(mappedBy = "doctor")

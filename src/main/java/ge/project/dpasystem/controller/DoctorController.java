@@ -3,6 +3,7 @@ package ge.project.dpasystem.controller;
 import ge.project.dpasystem.dto.DoctorDto;
 import ge.project.dpasystem.dto.UpdatePhoneDto;
 import ge.project.dpasystem.dto.UpdateProfessionalDescriptionDto;
+import ge.project.dpasystem.dto.auth.RegisterDoctorRequest;
 import ge.project.dpasystem.mapper.DoctorMapper;
 import ge.project.dpasystem.service.DoctorService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -48,11 +49,11 @@ public class DoctorController {
         return ResponseEntity.ok(doctor);
     }
 
-    @PostMapping
-    public ResponseEntity<DoctorDto> createDoctor(@RequestBody DoctorDto doctorDto) {
-        var newDoctor = doctorService.createDoctor(doctorDto);
+    /*@PostMapping
+    public ResponseEntity<DoctorDto> createDoctor(@RequestBody RegisterDoctorRequest request) {
+        var newDoctor = doctorService.createDoctor(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(newDoctor);
-    }
+    }*/
 
     @PutMapping
     public ResponseEntity<DoctorDto> updateDoctor(@RequestBody DoctorDto doctorDto) {

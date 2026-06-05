@@ -45,11 +45,11 @@ public class ClientController {
         return ResponseEntity.ok(client);
     }
 
-    @PostMapping
+    /*@PostMapping
     public ResponseEntity<ClientDto> createClient(@RequestBody ClientDto clientDto) {
         var newClient = clientService.createClient(clientDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(newClient);
-    }
+    }*/
 
     @PutMapping
     public ResponseEntity<ClientDto> updateClient(@RequestBody ClientDto clientDto) {

@@ -2,8 +2,10 @@ package ge.project.dpasystem.service;
 
 import ge.project.dpasystem.controller.RequestFilter;
 import ge.project.dpasystem.dto.DoctorDto;
+import ge.project.dpasystem.dto.auth.RegisterDoctorRequest;
 import ge.project.dpasystem.mapper.DoctorMapper;
 import ge.project.dpasystem.model.Doctor;
+import ge.project.dpasystem.model.VerificationStatus;
 import ge.project.dpasystem.repository.DoctorRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -43,8 +45,11 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     @Override
-    public DoctorDto createDoctor(DoctorDto doctorDto) {
-        Doctor doctor = doctorRepository.save(doctorMapper.toEntity(doctorDto));
+    public DoctorDto createDoctor(RegisterDoctorRequest request, String keycloakId) {
+
+        Doctor doctor = doctorRepository.save(doctorMapper.toEntity(request));
+        doctor.setKeycloakUserId(keycloakId);
+        doctor.setVerificationStatus(VerificationStatus.PENDING);
         return doctorMapper.toDto(doctor);
 
     }
@@ -70,6 +75,12 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     public DoctorDto findDoctorByEmail(String email) {
         var doctor = doctorRepository.findByEmail(email).orElseThrow(EntityNotFoundException::new);
+        return doctorMapper.toDto(doctor);
+    }
+
+    @Override
+    public DoctorDto findDoctorByKeycloakUserId(String keycloakId) {
+        var doctor = doctorRepository.findByKeycloakUserId(keycloakId).orElseThrow(EntityNotFoundException::new);
         return doctorMapper.toDto(doctor);
     }
 

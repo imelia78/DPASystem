@@ -1,10 +1,9 @@
 package ge.project.dpasystem.mapper;
 
 import ge.project.dpasystem.dto.DoctorDto;
+import ge.project.dpasystem.dto.auth.RegisterDoctorRequest;
 import ge.project.dpasystem.model.Doctor;
 import org.springframework.stereotype.Component;
-
-import javax.print.Doc;
 
 @Component
 public class DoctorMapper {
@@ -38,6 +37,20 @@ public class DoctorMapper {
                 .email(doctor.getEmail())
                 .appointments(doctor.getAppointments())
                 .reviews(doctor.getReviews())
+                .build();
+    }
+    public Doctor toEntity(RegisterDoctorRequest request){
+        return Doctor.builder()
+                .firstName(request.firstName())
+                .lastName(request.lastName())
+                .sex(request.sex())
+                .dateOfBirth(request.dateOfBirth())
+                .specialization(request.specialization())
+                .phoneNumber(request.phoneNumber())
+                .email(request.email())
+                .password(request.password())
+                .professionalDescription(request.professionalDescription())
+                .stateCertificateNumber(request.stateCertificateNumber())
                 .build();
     }
 

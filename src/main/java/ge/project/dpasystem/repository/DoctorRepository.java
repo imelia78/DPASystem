@@ -32,4 +32,5 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
     List<Doctor> findAllBySpecialization(String specialization, Pageable pageable);
 
 
+    Optional<Doctor> findByKeycloakUserId(String keycloakUserId);
 }
