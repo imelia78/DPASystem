@@ -14,16 +14,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(
                         auth -> auth
                                 .requestMatchers("/api/v1/auth/**").permitAll()
-                                .requestMatchers("/actuator/**").hasAuthority("ROLE_dpasystem.admin")
-                                .requestMatchers("/api/v1/clients/**").hasAnyAuthority("ROLE_dpasystem.admin", "ROLE_dpasystem.user")
-                                .requestMatchers("/api/v1/appointments/**").hasAuthority("ROLE_dpasystem.admin")
+                                .requestMatchers("/actuator/**").hasAuthority("ROLE_dpasystem.ADMIN")
+                                .requestMatchers("/api/v1/appointments/**","/api/v1/reviews/**").hasAnyAuthority()
+                                .requestMatchers("/api/v1/clients/**").hasAnyAuthority("ROLE_dpasystem.ADMIN", "ROLE_dpasystem.USER")
+                                .requestMatchers("/api/v1/appointments/**").hasAuthority("ROLE_dpasystem.ADMIN")
                                 .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2

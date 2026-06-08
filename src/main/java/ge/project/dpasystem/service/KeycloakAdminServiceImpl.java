@@ -6,9 +6,13 @@ import ge.project.dpasystem.dto.auth.TokenResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
@@ -97,7 +101,7 @@ public class KeycloakAdminServiceImpl implements KeycloakAdminService {
                 "temporary", false
         );
 
-        var client = Map.of(
+        var user = Map.of(
                 "username", email,
                 "email", email,
                 "firstName", firstName,
@@ -107,17 +111,38 @@ public class KeycloakAdminServiceImpl implements KeycloakAdminService {
         );
 
         HttpEntity<?> entity =
-                new HttpEntity<>(client, headers);
+                new HttpEntity<>(user, headers);
 
-        restTemplate.postForEntity(
-                usersUrl(),
-                entity,
-                Void.class
+        ResponseEntity<Void> response =
+                restTemplate.postForEntity(
+                        usersUrl(),
+                        entity,
+                        Void.class
+                );
+
+        URI location = Objects.requireNonNull(
+                response.getHeaders().getLocation());
+
+        String path = location.getPath();
+
+        return path.substring(path.lastIndexOf('/') + 1);
+    }
+
+    @Override
+    public void deleteUser(String keycloakId) {
+        var headers = new HttpHeaders();
+        headers.setBearerAuth(getAdminToken());
+
+        var entity = new HttpEntity<>(headers);
+
+        restTemplate.exchange(
+                usersUrl() + "/" + keycloakId, HttpMethod.DELETE, entity, Void.class
         );
 
-        URI location = Objects.requireNonNull(entity.getHeaders().getLocation());
-        String path = location.getPath();
-        return path.substring(path.lastIndexOf('/') + 1);
+        log.info(
+                "User {} deleted from Keycloak",
+                keycloakId
+        );
     }
 
 
@@ -150,14 +175,16 @@ public class KeycloakAdminServiceImpl implements KeycloakAdminService {
     @Override
     public void assignRole(String keycloakId, String roleName) {
 
+        String adminToken = getAdminToken();
+
         RoleRepresentation role =
                 getRealmRole(
                         roleName,
-                        getAdminToken()
+                        adminToken
                 );
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(getAdminToken());
+        headers.setBearerAuth(adminToken);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         HttpEntity<List<RoleRepresentation>> entity =
@@ -176,15 +203,16 @@ public class KeycloakAdminServiceImpl implements KeycloakAdminService {
     @Override
     public void removeRole(String keycloakId, String roleName) {
 
+        String adminToken = getAdminToken();
 
         RoleRepresentation role =
                 getRealmRole(
                         roleName,
-                        getAdminToken()
+                        adminToken
                 );
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(getAdminToken());
+        headers.setBearerAuth(adminToken);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         HttpEntity<List<RoleRepresentation>> entity =
@@ -202,30 +230,78 @@ public class KeycloakAdminServiceImpl implements KeycloakAdminService {
 
     }
 
-    public AuthResponse login(String username, String password) {
+    // НЕ НУЖЕН Т.К createUser возвращает ID
+
+    private String getUserIdByUsername(
+            String username,
+            String adminToken
+    ) {
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setBearerAuth(adminToken);
 
-        var body = new LinkedMultiValueMap<>();
+        HttpEntity<?> entity =
+                new HttpEntity<>(headers);
 
-        body.add("grant_type", "password");
-        body.add("client_id", clientId);
-        body.add("client_secret", clientSecret);
-        body.add("username", username);
-        body.add("password", password);
-
-        HttpEntity<?> entity = new HttpEntity<>(body, headers);
-
-        ResponseEntity<TokenResponse> response =
-                restTemplate.postForEntity(
-                        tokenUrl(),
+        ResponseEntity<List<Map<String, Object>>> response =
+                restTemplate.exchange(
+                        usersUrl() + "?username=" + username,
+                        HttpMethod.GET,
                         entity,
-                        TokenResponse.class
+                        new ParameterizedTypeReference<>() {
+                        }
                 );
 
-        return new AuthResponse(
-                Objects.requireNonNull(response.getBody()).accessToken()
-        );
+        return response.getBody()
+                .getFirst()
+                .get("id")
+                .toString();
     }
+
+    public AuthResponse login(String username, String password) {
+
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+            var body = new LinkedMultiValueMap<>();
+
+            body.add("grant_type", "password");
+            body.add("client_id", clientId);
+            body.add("client_secret", clientSecret);
+            body.add("username", username);
+            body.add("password", password);
+
+            HttpEntity<?> entity = new HttpEntity<>(body, headers);
+
+            ResponseEntity<TokenResponse> response =
+                    restTemplate.postForEntity(
+                            tokenUrl(),
+                            entity,
+                            TokenResponse.class
+                    );
+            TokenResponse responseBody = Objects.requireNonNull(response.getBody());
+
+
+            return new AuthResponse(
+                    responseBody.accessToken(),
+                    responseBody.refreshToken(),
+                    responseBody.expiresIn(),
+                    responseBody.tokenType()
+            );
+        } catch (HttpClientErrorException.Unauthorized e) {
+            log.warn("Failed authentication attempt for user {}", username);
+
+            throw new BadCredentialsException("Invalid username or password");
+
+        } catch (RestClientException e) {
+
+            throw new IllegalStateException(
+                    "Unable to communicate with Keycloak",
+                    e);
+
+        }
+
+    }
+
 }

@@ -1,5 +1,7 @@
 package ge.project.dpasystem.service;
 
+import ge.project.dpasystem.dto.auth.AuthResponse;
+
 public interface KeycloakAdminService {
 
     String createUser(
@@ -8,6 +10,8 @@ public interface KeycloakAdminService {
             String lastName,
             String password
     );
+
+    void deleteUser(String keycloakId);
 
     void assignRole(
             String keycloakId,
@@ -18,4 +22,11 @@ public interface KeycloakAdminService {
             String keycloakId,
             String roleName
     );
+
+    AuthResponse login(
+            String username,
+            String password
+    );
+
+
 }

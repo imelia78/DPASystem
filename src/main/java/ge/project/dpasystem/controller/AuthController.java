@@ -1,9 +1,7 @@
 package ge.project.dpasystem.controller;
 
 
-import ge.project.dpasystem.dto.auth.LoginRequest;
-import ge.project.dpasystem.dto.auth.RegisterClientRequest;
-import ge.project.dpasystem.dto.auth.RegisterDoctorRequest;
+import ge.project.dpasystem.dto.auth.*;
 import ge.project.dpasystem.service.AuthService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -38,8 +36,10 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request){
-        return null;
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+        var token = authService.login(request);
+        return ResponseEntity.ok(token);
+
     }
 
 }

@@ -45,12 +45,14 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     @Override
+    @Transactional
     public DoctorDto createDoctor(RegisterDoctorRequest request, String keycloakId) {
 
-        Doctor doctor = doctorRepository.save(doctorMapper.toEntity(request));
+        Doctor doctor = doctorMapper.toEntity(request);
         doctor.setKeycloakUserId(keycloakId);
         doctor.setVerificationStatus(VerificationStatus.PENDING);
-        return doctorMapper.toDto(doctor);
+        Doctor savedDoctor = doctorRepository.save(doctor);
+        return doctorMapper.toDto(savedDoctor);
 
     }
 

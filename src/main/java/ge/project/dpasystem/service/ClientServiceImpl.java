@@ -45,10 +45,14 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
+    @Transactional
     public ClientDto createClient(RegisterClientRequest request, String keycloakId) {
-        var createdClient = clientRepository.save(clientMapper.toEntity(request));
-        createdClient.setKeycloakUserId(keycloakId);
-        return clientMapper.toDto(clientRepository.save(createdClient));
+        var client = clientMapper.toEntity(request);
+        client.setKeycloakUserId(keycloakId);
+
+        var createdClient = clientRepository.save(client);
+        log.info("Client with email {} has been registered and saved successfully!",request.email());
+        return clientMapper.toDto(createdClient);
 
     }
 
