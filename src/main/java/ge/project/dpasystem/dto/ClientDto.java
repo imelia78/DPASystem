@@ -14,15 +14,18 @@ import java.util.UUID;
 
 @Builder
 public record ClientDto(
-        UUID id,
-        String firstName,
-        String lastName,
-        String password,
-        LocalDate dateOfBirth,
-        Sex sex,
-        List<Review> reviews,
-        List<Appointment> appointments,
-        String email,
-        String phoneNumber
+    UUID id,
+    String firstName,
+    String lastName,
+    String email,        // ← was password
+    LocalDate dateOfBirth,
+    Sex sex,
+    List<Review> reviews,
+    List<Appointment> appointments,
+    String phoneNumber,
+    String password      // ← move password here, or remove if unused in tests
 ) {
+  public ClientDto() {
+    this(null, null, null, null, null, null, null, null, null, null);
+  }
 }

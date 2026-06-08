@@ -61,7 +61,7 @@ public class Client {
 
 
 
-    private int computeAge(){
+    int computeAge(){
         LocalDate today = LocalDate.now();
         return Period.between(dateOfBirth, today).getYears();
     }

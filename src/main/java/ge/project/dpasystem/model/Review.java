@@ -50,7 +50,7 @@ public class Review {
 
 
     @PrePersist
-    private void onCreate(){
+    void onCreate(){
         createdAt = LocalDateTime.now();
     }
 

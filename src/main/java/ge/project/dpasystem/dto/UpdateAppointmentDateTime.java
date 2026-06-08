@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 
 public record UpdateAppointmentDateTime(
         LocalDateTime dateTime,
-        Integer duration
-
+        int duration
 ) {
 }

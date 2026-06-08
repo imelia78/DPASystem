@@ -116,11 +116,11 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     public void deleteClientByEmail(String email) {
-        Client preparedForDeletingClient = clientRepository.findByEmail(email).orElseThrow(EntityNotFoundException::new);
+        clientRepository.findByEmail(email)
+            .orElseThrow(() -> new EntityNotFoundException("Client with email: " + email + " not found!"));
         log.info("Client with email {} ready for deleting", email);
-        Client deletedClient = clientRepository.deleteByEmail(email).orElseThrow(UnsupportedOperationException::new);
+        clientRepository.deleteByEmail(email);
         log.info("Client with email {} successfully deleted", email);
-
     }
 
     @Override
