@@ -74,7 +74,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
 
-    public void bookingConflictsExclusion(UUID doctorId, UUID clientId, LocalDateTime start, int duration) {
+    private void bookingConflictsExclusion(UUID doctorId, UUID clientId, LocalDateTime start, int duration) {
 
         LocalDateTime end = start.plusMinutes(duration);
 

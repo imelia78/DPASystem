@@ -4,6 +4,7 @@ import ge.project.dpasystem.controller.RequestFilter;
 import ge.project.dpasystem.dto.ClientDto;
 import ge.project.dpasystem.dto.DoctorDto;
 import ge.project.dpasystem.dto.auth.RegisterDoctorRequest;
+import ge.project.dpasystem.model.VerificationStatus;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,6 +28,7 @@ public interface DoctorService {
     DoctorDto findDoctorByKeycloakUserId(String keycloakId);
 
     DoctorDto updateEmail(UUID id, String email);
+
 
     DoctorDto updatePhoneNumber(UUID id, String phoneNumber);
 

@@ -2,12 +2,14 @@ package ge.project.dpasystem.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
+@EnableMethodSecurity
 @Configuration
 public class SecurityConfig {
 
@@ -20,10 +22,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         auth -> auth
                                 .requestMatchers("/api/v1/auth/**").permitAll()
-                                .requestMatchers("/actuator/**").hasAuthority("ROLE_dpasystem.ADMIN")
-                                .requestMatchers("/api/v1/appointments/**","/api/v1/reviews/**").hasAnyAuthority()
-                                .requestMatchers("/api/v1/clients/**").hasAnyAuthority("ROLE_dpasystem.ADMIN", "ROLE_dpasystem.USER")
-                                .requestMatchers("/api/v1/appointments/**").hasAuthority("ROLE_dpasystem.ADMIN")
+                                .requestMatchers("/actuator/**", "/api/v1/admin/**").hasAuthority("dpasystem.ADMIN")
                                 .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2

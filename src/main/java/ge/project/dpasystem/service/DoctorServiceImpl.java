@@ -97,7 +97,9 @@ public class DoctorServiceImpl implements DoctorService {
         return doctorMapper.toDto(doctor);
     }
 
+
     @Override
+    @Transactional
     public DoctorDto updateProfessionalDescription(UUID id, String professionalDescription) {
         var doctor = doctorRepository.findById(id).orElseThrow(EntityNotFoundException::new);
         doctor.setProfessionalDescription(professionalDescription);

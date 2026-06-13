@@ -40,6 +40,7 @@ public class ClientMapper {
 
     public ClientDto toDto(Client client) {
         return ClientDto.builder()
+                .id(client.getId())
                 .firstName(client.getFirstName())
                 .lastName(client.getLastName())
                 .sex(client.getSex())

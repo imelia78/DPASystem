@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,8 @@ public class ClientController {
 
     private final ClientService clientService;
 
+
+    @PreAuthorize("hasAuthority('dpasystem.ADMIN')")
     @GetMapping()
     public ResponseEntity<List<ClientDto>> getAllClients(
             @RequestParam("pageSize") Integer pageSize,
@@ -32,6 +35,7 @@ public class ClientController {
         return ResponseEntity.ok(clientService.findAllClientsByPages(filter));
     }
 
+    @PreAuthorize("hasAuthority('dpasystem.ADMIN')")
     @GetMapping(params = "email")
     public ResponseEntity<ClientDto> getClientByEmail(@RequestParam String email) {
         var client = clientService.findClientByEmail(email);
@@ -39,6 +43,7 @@ public class ClientController {
 
     }
 
+    @PreAuthorize("hasAnyAuthority('dpasystem.ADMIN','dpasystem.CLIENT')")
     @GetMapping("/{id}")
     public ResponseEntity<ClientDto> getClientById(@PathVariable UUID id) {
         var client = clientService.findClientById(id);
@@ -51,13 +56,14 @@ public class ClientController {
         return ResponseEntity.status(HttpStatus.CREATED).body(newClient);
     }*/
 
+    @PreAuthorize("hasAnyAuthority('dpasystem.ADMIN','dpasystem.CLIENT')")
     @PutMapping
     public ResponseEntity<ClientDto> updateClient(@RequestBody ClientDto clientDto) {
         var updatedClient = clientService.updateClient(clientDto);
         return ResponseEntity.ok(updatedClient);
     }
 
-
+    @PreAuthorize("hasAnyAuthority('dpasystem.ADMIN','dpasystem.CLIENT')")
     @PatchMapping("/{id}/phone")
     public ResponseEntity<ClientDto> updateClientPhoneNumber(@PathVariable UUID id, @RequestBody UpdatePhoneDto phoneDto) {
 
@@ -67,6 +73,7 @@ public class ClientController {
     }
 
 
+    @PreAuthorize("hasAnyAuthority('dpasystem.ADMIN','dpasystem.CLIENT')")
     @PatchMapping("/{id}/email")
     public ResponseEntity<ClientDto> updateClientEmail(@PathVariable UUID id, @RequestBody UpdateEmailDto emailDto) {
 
@@ -75,6 +82,7 @@ public class ClientController {
         return ResponseEntity.ok(changedClient);
     }
 
+    @PreAuthorize("hasAuthority('dpasystem.ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteClientById(@PathVariable UUID id) {
         clientService.deleteClientById(id);

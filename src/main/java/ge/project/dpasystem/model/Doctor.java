@@ -55,6 +55,8 @@ public class Doctor {
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = true)
+    private String adminComment;
 
 
     @Column(nullable = false)

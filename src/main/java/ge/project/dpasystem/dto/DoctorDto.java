@@ -22,6 +22,7 @@ public record DoctorDto(
         LocalDate dateOfBirth,
         String email,
         List<Appointment> appointments,
-        List<Review> reviews
+        List<Review> reviews,
+        String adminComment
 ) {
 }

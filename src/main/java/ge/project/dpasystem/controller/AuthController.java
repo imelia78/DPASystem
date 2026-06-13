@@ -35,6 +35,7 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body("Your profile has been created successfully!");
     }
 
+
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
         var token = authService.login(request);

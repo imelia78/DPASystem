@@ -51,7 +51,7 @@ public class ClientServiceImpl implements ClientService {
         client.setKeycloakUserId(keycloakId);
 
         var createdClient = clientRepository.save(client);
-        log.info("Client with email {} has been registered and saved successfully!",request.email());
+        log.info("Client with id {} has been registered  and saved successfully!", client.getId());
         return clientMapper.toDto(createdClient);
 
     }

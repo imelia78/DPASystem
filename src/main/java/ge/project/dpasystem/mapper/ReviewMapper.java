@@ -18,7 +18,6 @@ public class ReviewMapper {
                            Client client) {
 
         return Review.builder()
-                .id(reviewDto.id())
                 .rating(reviewDto.rating())
                 .comment(reviewDto.comment())
                 .appointment(appointment)
@@ -29,7 +28,8 @@ public class ReviewMapper {
     }
 
     public ReviewDto toDto(Review review) {
-        return ReviewDto.builder().id(review.getId())
+        return ReviewDto.builder()
+                .id(review.getId())
                 .comment(review.getComment())
                 .rating(review.getRating())
                 .appointmentId(review.getAppointment().getId())

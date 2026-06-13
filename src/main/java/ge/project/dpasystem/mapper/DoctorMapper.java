@@ -10,7 +10,6 @@ public class DoctorMapper {
 
     public Doctor toEntity(DoctorDto doctorDto) {
         return Doctor.builder()
-                .id(doctorDto.id())
                 .firstName(doctorDto.firstName())
                 .lastName(doctorDto.lastName())
                 .professionalDescription(doctorDto.professionalDescription())
@@ -36,6 +35,7 @@ public class DoctorMapper {
                 .dateOfBirth(doctor.getDateOfBirth())
                 .email(doctor.getEmail())
                 .appointments(doctor.getAppointments())
+                .adminComment(doctor.getAdminComment())
                 .reviews(doctor.getReviews())
                 .build();
     }
