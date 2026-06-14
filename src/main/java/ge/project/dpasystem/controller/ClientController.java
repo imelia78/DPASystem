@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,6 +44,16 @@ public class ClientController {
         return ResponseEntity.ok(client);
 
     }
+
+    @GetMapping("/me")
+    @PreAuthorize("hasAuthority('dpasystem.CLIENT')")
+    public ResponseEntity<ClientDto> getCurrentClient(
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        String email = jwt.getClaimAsString("email");
+        return ResponseEntity.ok(clientService.findClientByEmail(email));
+    }
+
 
     @PreAuthorize("hasAnyAuthority('dpasystem.ADMIN','dpasystem.CLIENT')")
     @GetMapping("/{id}")
