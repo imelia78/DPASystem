@@ -45,8 +45,9 @@ public class ClientController {
 
     }
 
-    @GetMapping("/me")
+
     @PreAuthorize("hasAuthority('dpasystem.CLIENT')")
+    @GetMapping("/me")
     public ResponseEntity<ClientDto> getCurrentClient(
             @AuthenticationPrincipal Jwt jwt
     ) {

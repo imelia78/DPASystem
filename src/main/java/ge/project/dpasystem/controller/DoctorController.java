@@ -1,5 +1,6 @@
 package ge.project.dpasystem.controller;
 
+import ge.project.dpasystem.dto.ClientDto;
 import ge.project.dpasystem.dto.DoctorDto;
 import ge.project.dpasystem.dto.UpdatePhoneDto;
 import ge.project.dpasystem.dto.UpdateProfessionalDescriptionDto;
@@ -12,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,6 +50,15 @@ public class DoctorController {
         var doctor = doctorService.findDoctorById(id);
         return ResponseEntity.ok(doctor);
 
+    }
+
+    @GetMapping("/me")
+    @PreAuthorize("hasAnyAuthority('dpasystem.DOCTOR_PENDING','dpasystem.DOCTOR')")
+    public ResponseEntity<DoctorDto> getCurrentClient(
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        String email = jwt.getClaimAsString("email");
+        return ResponseEntity.ok(doctorService.findDoctorByEmail(email));
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -91,6 +103,7 @@ public class DoctorController {
         return ResponseEntity.ok(doctor);
 
     }
+
     @PreAuthorize("hasAuthority('dpasystem.ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteDoctor(@PathVariable UUID id) {
