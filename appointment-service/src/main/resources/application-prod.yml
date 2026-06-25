@@ -19,10 +19,13 @@ spring:
     bootstrap-servers: kafka:9092
 
     producer:
-      properties:
-        spring.json.add.type.headers: false
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.type.mapping: > 
+          clientRegisteredEvent:ge.appointmentservice.dto.kafka.ClientRegisteredEvent,
+          doctorRegisteredEvent:ge.appointmentservice.dto.kafka.DoctorRegisteredEvent
+
 
 
   datasource:

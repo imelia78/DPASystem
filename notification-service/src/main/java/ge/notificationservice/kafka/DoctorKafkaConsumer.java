@@ -21,7 +21,7 @@ public class DoctorKafkaConsumer {
 
 
     @KafkaListener(topics = "doctor_registration")
-    public void consumeDoctorRegistrationRequest(DoctorRegisteredEvent event){
+    public void consumeDoctorRegistrationRequest(DoctorRegisteredEvent event) {
 
         log.info("Registration request for doctor with id {} has been successfully received!", event.doctorId());
 
@@ -30,10 +30,13 @@ public class DoctorKafkaConsumer {
                 event.lastName()
         );
 
+        mailSenderService.sendMail(
+                event.email(),
+                message.subject(),
+                message.body()
 
+        );
 
     }
-
-
 
 }

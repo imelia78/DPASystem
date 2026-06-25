@@ -127,6 +127,7 @@ public class ClientServiceImpl implements ClientService {
                     e);
         }
 
+        client.setEmail(newEmail);
         log.info("Email updated for client {}", id);
 
         return clientMapper.toDto(client);

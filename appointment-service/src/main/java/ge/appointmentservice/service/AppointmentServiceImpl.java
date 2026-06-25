@@ -78,6 +78,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         var event = new AppointmentEvent(
                 saved.getId(),
+                client.getEmail(),
                 saved.getAppointmentDateTime(),
                 saved.getDuration(),
                 saved.getClient().getFirstName(),
@@ -123,6 +124,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         var event = new AppointmentEvent(
                 updated.id(),
+                updated.client().getEmail(),
                 updated.appointmentDateTime(),
                 updated.appointmentDuration(),
                 updated.client().getFirstName(),

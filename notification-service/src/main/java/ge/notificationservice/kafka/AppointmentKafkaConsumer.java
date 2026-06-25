@@ -34,6 +34,14 @@ public class AppointmentKafkaConsumer {
                 event.doctorLastName()
         );
 
+
+        mailSenderService.sendMail(
+                event.clientEmail(),
+                message.subject(),
+                message.body()
+        );
+
+
     }
 
 
