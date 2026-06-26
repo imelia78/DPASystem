@@ -24,7 +24,8 @@ spring:
       properties:
         spring.json.type.mapping: > 
           clientRegisteredEvent:ge.appointmentservice.dto.kafka.ClientRegisteredEvent,
-          doctorRegisteredEvent:ge.appointmentservice.dto.kafka.DoctorRegisteredEvent
+          doctorRegisteredEvent:ge.appointmentservice.dto.kafka.DoctorRegisteredEvent,
+          appointmentEvent:ge.appointmentservice.dto.kafka.AppointmentEvent
 
 
 

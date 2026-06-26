@@ -58,6 +58,8 @@ public class DoctorServiceImpl implements DoctorService {
         doctor.setVerificationStatus(VerificationStatus.PENDING);
         Doctor savedDoctor = doctorRepository.save(doctor);
 
+
+
         var event = new DoctorRegisteredEvent(
                 doctor.getId(),
                 doctor.getEmail(),

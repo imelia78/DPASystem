@@ -7,11 +7,13 @@ import ge.appointmentservice.model.Address;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+
+
+
 public record AppointmentRequestDto(
-        UUID id,
+        UUID clientId,
+        UUID doctorId,
         LocalDateTime dateTime,
-        DoctorDto doctor,
-        ClientDto client,
         Address address,
         Integer duration
 ) {

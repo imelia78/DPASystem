@@ -45,6 +45,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
+    // TODO разделить на 2 метода по LocalDateTime ( прошедшие и будущие appointments)
     public List<AppointmentDto> findAllAppointmentsByClientId(UUID clientId, RequestFilter filter) {
         int pageSize = filter.pageSize() != null
                 ? filter.pageSize() : 10; //todo default size in app.properties,  не хардкодить!
@@ -57,9 +58,9 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public AppointmentDto createAppointment(AppointmentRequestDto request) {
-        var doctor = doctorRepository.findById(request.doctor().id())
+        var doctor = doctorRepository.findById(request.doctorId())
                 .orElseThrow(() -> new EntityNotFoundException("Doctor not found!"));
-        var client = clientRepository.findClientById(request.client().id())
+        var client = clientRepository.findClientById(request.clientId())
                 .orElseThrow(() -> new EntityNotFoundException("Client not found!"));
 
         bookingConflictsExclusion(doctor.getId(), client.getId(), request.dateTime(), request.duration());

@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -54,6 +56,13 @@ public class MailTemplateService {
                                            String clientLastName,
                                            String doctorFirstName,
                                            String doctorLastName) {
+
+
+        DateTimeFormatter formatter =
+                DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy 'at' HH:mm", Locale.ENGLISH);
+
+        String formattedDateTime = appointmentDateTime.format(formatter);
+
         return new MailMessage(
                 "Scheduled Appointment",
                 """
@@ -75,7 +84,7 @@ public class MailTemplateService {
                         clientLastName,
                         doctorFirstName,
                         doctorLastName,
-                        appointmentDateTime,
+                        formattedDateTime,
                         appointmentDuration)
 
         );
