@@ -7,6 +7,7 @@ import ge.appointmentservice.dto.UpdateEmailDto;
 import ge.appointmentservice.dto.UpdatePhoneDto;
 import ge.appointmentservice.service.ClientService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -77,7 +78,7 @@ public class ClientController {
 
     @PreAuthorize("hasAnyAuthority('dpasystem.ADMIN','dpasystem.CLIENT')")
     @PatchMapping("/{id}/phone")
-    public ResponseEntity<ClientDto> updateClientPhoneNumber(@PathVariable UUID id, @RequestBody UpdatePhoneDto phoneDto) {
+    public ResponseEntity<ClientDto> updateClientPhoneNumber(@PathVariable UUID id,@Valid @RequestBody UpdatePhoneDto phoneDto) {
 
         var changedClient = clientService.updatePhoneNumber(id, phoneDto.phoneNumber());
 
@@ -87,7 +88,7 @@ public class ClientController {
 
     @PreAuthorize("hasAnyAuthority('dpasystem.ADMIN','dpasystem.CLIENT')")
     @PatchMapping("/{id}/email")
-    public ResponseEntity<ClientDto> updateClientEmail(@PathVariable UUID id, @RequestBody UpdateEmailDto emailDto) {
+    public ResponseEntity<ClientDto> updateClientEmail(@PathVariable UUID id, @Valid @RequestBody UpdateEmailDto emailDto) {
 
         var changedClient = clientService.updateEmail(id, emailDto.email());
 

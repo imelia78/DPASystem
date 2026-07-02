@@ -1,9 +1,11 @@
 package ge.appointmentservice.dto;
 
+import jakarta.validation.constraints.Future;
+
 import java.time.LocalDateTime;
 
 public record UpdateAppointmentDateTime(
-        LocalDateTime dateTime,
+     @Future LocalDateTime dateTime,
         Integer duration
 
 ) {

@@ -8,6 +8,7 @@ import ge.appointmentservice.dto.auth.RegisterClientRequest;
 import ge.appointmentservice.dto.auth.RegisterDoctorRequest;
 import ge.appointmentservice.service.AuthService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,21 +28,21 @@ public class AuthController {
 
 
     @PostMapping("/register/doctor")
-    public ResponseEntity<String> registerDoctor(@RequestBody RegisterDoctorRequest request) {
+    public ResponseEntity<String> registerDoctor(@Valid @RequestBody RegisterDoctorRequest request) {
         authService.registerDoctorRequest(request);
         return ResponseEntity.status(HttpStatus.CREATED).body("Your request has been send successfully!");
 
     }
 
     @PostMapping("/register/client")
-    public ResponseEntity<String> registerClient(@RequestBody RegisterClientRequest request) {
+    public ResponseEntity<String> registerClient(@Valid @RequestBody RegisterClientRequest request) {
         authService.registerClientRequest(request);
         return ResponseEntity.status(HttpStatus.CREATED).body("Your profile has been created successfully!");
     }
 
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         var token = authService.login(request);
         return ResponseEntity.ok(token);
 

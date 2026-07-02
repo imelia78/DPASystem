@@ -158,9 +158,9 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     public void deleteClientById(UUID id) {
-        var client = clientRepository.findClientById(id);
+        var client = clientRepository.findClientById(id).orElseThrow(EntityNotFoundException::new);
         log.info("Client with id {} ready for deleting", id);
-        clientRepository.deleteById(id);
+        clientRepository.delete(client);
         log.info("Client with id {} successfully deleted", id);
     }
 }

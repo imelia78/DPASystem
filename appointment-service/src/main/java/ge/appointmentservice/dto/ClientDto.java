@@ -15,7 +15,6 @@ public record ClientDto(
         UUID id,
         String firstName,
         String lastName,
-        String password,
         LocalDate dateOfBirth,
         Sex sex,
         List<Review> reviews,

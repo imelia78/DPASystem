@@ -57,6 +57,22 @@ public class AppointmentController {
     }
 
 
+    @PreAuthorize("hasAnyAuthority('dpasystem.ADMIN','dpasystem.CLIENT')")
+    @GetMapping("/client/{id}/upcoming")
+    public ResponseEntity<List<AppointmentDto>> getUpcomingAppointments(
+            @PathVariable UUID id
+    ){
+        return ResponseEntity.ok(appointmentService.findUpcomingAppointments(id));
+    }
+
+
+    @PreAuthorize("hasAnyAuthority('dpasystem.ADMIN','dpasystem.CLIENT')")
+    @GetMapping("/client/{id}/history")
+    public ResponseEntity<List<AppointmentDto>> getPreviousAppointments(@PathVariable UUID id){
+        return ResponseEntity.ok(appointmentService.findPreviousAppointments(id));
+    }
+
+
     @PreAuthorize("hasAnyAuthority('dpasystem.ADMIN','dpasystem.DOCTOR')")
     @GetMapping("/date-range")
     public ResponseEntity<List<AppointmentDto>> getAppointmentsByDateRange(

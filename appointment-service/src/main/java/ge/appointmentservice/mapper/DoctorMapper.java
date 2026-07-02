@@ -38,6 +38,8 @@ public class DoctorMapper {
                 .appointments(doctor.getAppointments())
                 .adminComment(doctor.getAdminComment())
                 .reviews(doctor.getReviews())
+                .averageRating(doctor.getAverageRating())
+                .reviewsCount(doctor.getReviewsCount())
                 .build();
     }
     public Doctor toEntity(RegisterDoctorRequest request){
@@ -49,7 +51,6 @@ public class DoctorMapper {
                 .specialization(request.specialization())
                 .phoneNumber(request.phoneNumber())
                 .email(request.email())
-                .password(request.password())
                 .professionalDescription(request.professionalDescription())
                 .stateCertificateNumber(request.stateCertificateNumber())
                 .build();

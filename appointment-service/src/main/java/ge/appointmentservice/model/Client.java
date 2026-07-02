@@ -42,8 +42,8 @@ public class Client {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
-    private String password;
+   /* @Column(nullable = false)
+    private String password;*/
 
     @Enumerated(EnumType.STRING)
     private Sex sex;

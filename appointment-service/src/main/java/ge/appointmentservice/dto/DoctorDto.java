@@ -23,6 +23,9 @@ public record DoctorDto(
         String email,
         List<Appointment> appointments,
         List<Review> reviews,
-        String adminComment
+        String adminComment,
+        Double averageRating,
+        Integer reviewsCount
 ) {
+
 }

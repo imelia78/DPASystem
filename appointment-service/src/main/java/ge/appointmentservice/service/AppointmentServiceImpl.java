@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -55,6 +56,27 @@ public class AppointmentServiceImpl implements AppointmentService {
         var clientAppointments = appointmentRepository.findAllByClient_Id(clientId, pageable);
         return clientAppointments.stream().map(appointmentMapper::toDto).toList();
     }
+
+
+    @Override
+    public List<AppointmentDto> findUpcomingAppointments(UUID id) {
+        var dateTime = LocalDateTime.now();
+        var upcomingAppointments = appointmentRepository
+                .findAllByClient_IdAndAppointmentDateTimeAfterAndAppointmentStatus(id, dateTime, AppointmentStatus.CREATED);
+
+        return upcomingAppointments.stream().map(appointmentMapper::toDto).toList();
+
+    }
+
+    @Override
+    public List<AppointmentDto> findPreviousAppointments(UUID id) {
+        var dateTime = LocalDateTime.now();
+        var previousAppointments = appointmentRepository
+                .findAllByClient_IdAndAppointmentDateTimeBeforeAndAppointmentStatus(id, dateTime, AppointmentStatus.COMPLETED);
+
+        return previousAppointments.stream().map(appointmentMapper::toDto).toList();
+    }
+
 
     @Override
     public AppointmentDto createAppointment(AppointmentRequestDto request) {

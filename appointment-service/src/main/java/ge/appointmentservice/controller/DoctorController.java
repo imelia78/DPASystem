@@ -7,6 +7,7 @@ import ge.appointmentservice.dto.UpdateProfessionalDescriptionDto;
 import ge.appointmentservice.mapper.DoctorMapper;
 import ge.appointmentservice.service.DoctorService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -95,7 +96,8 @@ public class DoctorController {
     @PreAuthorize("hasAnyAuthority('dpasystem.ADMIN','dpasystem.DOCTOR','dpasystem.DOCTOR_PENDING')")
     @PatchMapping("/{id}/phone")
     @Transactional
-    public ResponseEntity<DoctorDto> updateDoctorPhoneNumber(@PathVariable UUID id, @RequestBody UpdatePhoneDto phoneDto) {
+    public ResponseEntity<DoctorDto> updateDoctorPhoneNumber(@PathVariable UUID id,
+                                                             @Valid @RequestBody UpdatePhoneDto phoneDto) {
         var doctor = doctorService.updatePhoneNumber(id, phoneDto.phoneNumber());
         return ResponseEntity.ok(doctor);
 

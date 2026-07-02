@@ -59,7 +59,6 @@ public class DoctorServiceImpl implements DoctorService {
         Doctor savedDoctor = doctorRepository.save(doctor);
 
 
-
         var event = new DoctorRegisteredEvent(
                 doctor.getId(),
                 doctor.getEmail(),
@@ -105,6 +104,7 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
 
+    //updatePassword???
 
 
     @Override

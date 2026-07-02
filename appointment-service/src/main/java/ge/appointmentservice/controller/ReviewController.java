@@ -77,7 +77,7 @@ public class ReviewController {
     }
 
 
-    @PreAuthorize("hasAuthority('dpasystem.CLIENT')")
+    @PreAuthorize("hasAuthority('dpasystem.ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<ReviewDto> updateReview(@PathVariable UUID id, ReviewDto reviewDto) {
         return ResponseEntity.ok(reviewService.updateReview(id, reviewDto));
