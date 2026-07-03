@@ -5,6 +5,7 @@ package ge.appointmentservice.service;
 import ge.appointmentservice.controller.RequestFilter;
 import ge.appointmentservice.dto.DoctorDto;
 import ge.appointmentservice.dto.auth.RegisterDoctorRequest;
+import ge.appointmentservice.model.Specialization;
 
 import java.util.List;
 import java.util.UUID;
@@ -14,6 +15,8 @@ public interface DoctorService {
     List<DoctorDto> findAllDoctorsByPages(RequestFilter filter);
 
     List<DoctorDto> findAllPublicDoctors(RequestFilter filter);
+
+    List<DoctorDto> findAllPublicDoctorsBySpecialization(RequestFilter filter, Specialization specialization);
 
     List<DoctorDto> findAllDoctorsForAdmin();
 

@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import javax.print.Doc;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,8 +22,13 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
 
     Page<Doctor> findAllBy(Pageable pageable);
 
-    Page<Doctor> findAllByVerificationStatusContainingIgnoreCase(
+    Page<Doctor> findAllByVerificationStatus(
             Pageable pageable, VerificationStatus verificationStatus);
+
+    Page<Doctor> findAllByVerificationStatusAndSpecialization(
+            Pageable pageable,
+            VerificationStatus verificationStatus,
+            String specialization);
 
     List<Doctor> findByFirstNameAndLastName(String firstName, String lastName);
 

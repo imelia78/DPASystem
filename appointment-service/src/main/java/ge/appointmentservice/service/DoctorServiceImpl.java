@@ -8,11 +8,13 @@ import ge.appointmentservice.dto.kafka.DoctorRegisteredEvent;
 import ge.appointmentservice.kafka.DoctorKafkaProducer;
 import ge.appointmentservice.mapper.DoctorMapper;
 import ge.appointmentservice.model.Doctor;
+import ge.appointmentservice.model.Specialization;
 import ge.appointmentservice.model.VerificationStatus;
 import ge.appointmentservice.repository.DoctorRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,9 +56,29 @@ public class DoctorServiceImpl implements DoctorService {
 
         var pageable = Pageable.ofSize(pageSize).withPage(pageNumber);
 
-        return doctorRepository.findAllByVerificationStatusContainingIgnoreCase(pageable, VerificationStatus.APPROVED)
+        return doctorRepository.findAllByVerificationStatus(pageable, VerificationStatus.APPROVED)
                 .stream().map(doctorMapper::toDto).toList();
     }
+
+    @Override
+    public List<DoctorDto> findAllPublicDoctorsBySpecialization(RequestFilter filter, Specialization specialization) {
+
+        int pageSize = filter.pageSize() != null
+                ? filter.pageSize() : 10;
+        int pageNumber = filter.pageNumber() != null
+                ? filter.pageNumber() : 0;
+
+        var pageable = Pageable.ofSize(pageSize).withPage(pageNumber);
+
+        Page<Doctor> doctors = specialization != null
+                ? doctorRepository.findAllByVerificationStatusAndSpecialization(
+                pageable, VerificationStatus.APPROVED, specialization.name())
+                : doctorRepository.findAllByVerificationStatus(
+                pageable, VerificationStatus.APPROVED);
+
+        return doctors.stream().map(doctorMapper::toDto).toList();
+    }
+
 
     @Override
     public List<DoctorDto> findAllDoctorsForAdmin() {

@@ -45,7 +45,7 @@ public class Doctor {
     private LocalDate dateOfBirth;
 
     @Column(nullable = false)
-    private String specialization;
+    private String  specialization;
 
     @Column(nullable = false, unique = true)
     private String phoneNumber;

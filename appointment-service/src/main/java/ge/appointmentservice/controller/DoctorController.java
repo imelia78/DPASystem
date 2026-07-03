@@ -6,6 +6,7 @@ import ge.appointmentservice.dto.UpdatePhoneDto;
 import ge.appointmentservice.dto.UpdateProfessionalDescriptionDto;
 import ge.appointmentservice.mapper.DoctorMapper;
 import ge.appointmentservice.model.Doctor;
+import ge.appointmentservice.model.Specialization;
 import ge.appointmentservice.service.DoctorService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -48,10 +49,11 @@ public class DoctorController {
     @GetMapping
     public ResponseEntity<List<DoctorDto>> getAllPublicDoctors(
             @RequestParam("pageSize") Integer pageSize,
-            @RequestParam("pageNumber") Integer pageNumber
+            @RequestParam("pageNumber") Integer pageNumber,
+            @RequestParam(value = "specialization", required = false) Specialization specialization
     ){
         var filter = new RequestFilter(pageSize, pageNumber);
-        var approvedDoctors = doctorService.findAllPublicDoctors(filter);
+        var approvedDoctors = doctorService.findAllPublicDoctorsBySpecialization(filter,specialization);
         return ResponseEntity.ok(approvedDoctors);
     }
 
