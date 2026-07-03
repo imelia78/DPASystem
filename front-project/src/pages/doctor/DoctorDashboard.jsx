@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
+import { format, isToday, isThisWeek } from 'date-fns';
 import { Calendar as CalendarIcon, Users, Star, TrendingUp, Clock, User as UserIcon } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
+import { doctorService } from '../../services/api';
 import { useTranslation } from 'react-i18next';
 
 const DashboardContainer = styled.div`
@@ -260,9 +263,45 @@ const WhiteButton = styled.button`
 
 const DoctorDashboard = () => {
   const { t } = useTranslation();
-  const userStr = localStorage.getItem('user');
-  const user = userStr ? JSON.parse(userStr) : {};
-  const lastName = user.lastName || 'Doctor';
+  const navigate = useNavigate();
+  const [doctor, setDoctor] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDoctor = async () => {
+      try {
+        const response = await doctorService.getMe();
+        setDoctor(response.data);
+      } catch (err) {
+        console.error('Failed to fetch doctor', err);
+        navigate('/');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDoctor();
+  }, [navigate]);
+
+  if (loading) return <DashboardContainer style={{ padding: '3rem', textAlign: 'center' }}>Loading dashboard...</DashboardContainer>;
+  if (!doctor) return null;
+
+  const lastName = doctor.lastName || 'Doctor';
+  const appointments = doctor.appointments || [];
+  const reviews = doctor.reviews || [];
+
+  const todaysAppointments = appointments.filter(a => a.appointmentDateTime && isToday(new Date(a.appointmentDateTime)));
+  const uniquePatients = new Set(appointments.map(a => a.client?.id).filter(Boolean));
+  const averageRating = doctor.averageRating ? doctor.averageRating.toFixed(1) : '0.0';
+  const thisWeekAppointments = appointments.filter(a => a.appointmentDateTime && isThisWeek(new Date(a.appointmentDateTime)));
+
+  const upcomingAppointments = appointments
+    .filter(a => ['CREATED', 'CONFIRMED', 'PENDING'].includes(a.appointmentStatus) || !a.appointmentStatus)
+    .sort((a, b) => new Date(a.appointmentDateTime) - new Date(b.appointmentDateTime))
+    .slice(0, 5);
+
+  const recentReviews = [...reviews]
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+    .slice(0, 3);
 
   return (
     <DashboardContainer>
@@ -278,7 +317,7 @@ const DoctorDashboard = () => {
           </div>
           <div className="content">
             <span className="label">{t('doctorDashboard.todaysAppointments')}</span>
-            <span className="value">4</span>
+            <span className="value">{todaysAppointments.length}</span>
           </div>
         </StatCard>
         
@@ -288,7 +327,7 @@ const DoctorDashboard = () => {
           </div>
           <div className="content">
             <span className="label">{t('doctorDashboard.totalPatients')}</span>
-            <span className="value">247</span>
+            <span className="value">{uniquePatients.size}</span>
           </div>
         </StatCard>
         
@@ -298,7 +337,7 @@ const DoctorDashboard = () => {
           </div>
           <div className="content">
             <span className="label">{t('doctorDashboard.averageRating')}</span>
-            <span className="value">4.8</span>
+            <span className="value">{averageRating}</span>
           </div>
         </StatCard>
         
@@ -308,7 +347,7 @@ const DoctorDashboard = () => {
           </div>
           <div className="content">
             <span className="label">{t('doctorDashboard.thisWeek')}</span>
-            <span className="value">32</span>
+            <span className="value">{thisWeekAppointments.length}</span>
           </div>
         </StatCard>
       </StatsGrid>
@@ -317,100 +356,55 @@ const DoctorDashboard = () => {
         <SectionContainer>
           <SectionTitle>{t('doctorDashboard.todaysSchedule')}</SectionTitle>
           
-          <AppointmentRow>
-            <div className="left">
-              <div className="avatar"><UserIcon size={20} /></div>
-              <div className="details">
-                <span className="name">John Smith</span>
-                <span className="type">{t('doctorDashboard.followUp')}</span>
-              </div>
+          {upcomingAppointments.length === 0 ? (
+            <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>
+              No upcoming appointments.
             </div>
-            <div className="right">
-              <span className="time"><Clock size={14} /> 10:00 AM</span>
-              <StatusPill status="confirmed">{t('doctorDashboard.confirmed')}</StatusPill>
-            </div>
-          </AppointmentRow>
-          
-          <AppointmentRow>
-            <div className="left">
-              <div className="avatar"><UserIcon size={20} /></div>
-              <div className="details">
-                <span className="name">Sarah Williams</span>
-                <span className="type">{t('doctorDashboard.initialConsultation')}</span>
-              </div>
-            </div>
-            <div className="right">
-              <span className="time"><Clock size={14} /> 11:30 AM</span>
-              <StatusPill status="confirmed">{t('doctorDashboard.confirmed')}</StatusPill>
-            </div>
-          </AppointmentRow>
-          
-          <AppointmentRow>
-            <div className="left">
-              <div className="avatar"><UserIcon size={20} /></div>
-              <div className="details">
-                <span className="name">Michael Brown</span>
-                <span className="type">{t('doctorDashboard.checkUp')}</span>
-              </div>
-            </div>
-            <div className="right">
-              <span className="time"><Clock size={14} /> 2:00 PM</span>
-              <StatusPill status="confirmed">{t('doctorDashboard.confirmed')}</StatusPill>
-            </div>
-          </AppointmentRow>
-          
-          <AppointmentRow>
-            <div className="left">
-              <div className="avatar"><UserIcon size={20} /></div>
-              <div className="details">
-                <span className="name">Emily Davis</span>
-                <span className="type">{t('doctorDashboard.initialConsultation')}</span>
-              </div>
-            </div>
-            <div className="right">
-              <span className="time"><Clock size={14} /> 3:30 PM</span>
-              <StatusPill status="pending">{t('doctorDashboard.pending')}</StatusPill>
-            </div>
-          </AppointmentRow>
+          ) : (
+            upcomingAppointments.map(app => (
+              <AppointmentRow key={app.id}>
+                <div className="left">
+                  <div className="avatar"><UserIcon size={20} /></div>
+                  <div className="details">
+                    <span className="name">{app.client?.firstName} {app.client?.lastName}</span>
+                    <span className="type">Consultation</span>
+                  </div>
+                </div>
+                <div className="right">
+                  <span className="time"><Clock size={14} /> {app.appointmentDateTime ? format(new Date(app.appointmentDateTime), 'hh:mm a') : 'TBD'}</span>
+                  <StatusPill status={app.appointmentStatus === 'CREATED' ? 'confirmed' : 'pending'}>
+                    {app.appointmentStatus || 'pending'}
+                  </StatusPill>
+                </div>
+              </AppointmentRow>
+            ))
+          )}
 
         </SectionContainer>
 
         <SectionContainer>
           <SectionTitle>{t('doctorDashboard.recentReviews')}</SectionTitle>
           
-          <ReviewRow>
-            <div className="header">
-              <span className="name">Robert Johnson</span>
-              <div className="stars">
-                {[...Array(5)].map((_, i) => <Star key={i} size={14} fill="currentColor" />)}
-              </div>
+          {recentReviews.length === 0 ? (
+            <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>
+              No reviews yet.
             </div>
-            <span className="comment">Excellent doctor! Very thorough and caring.</span>
-            <span className="date">2026-05-14</span>
-          </ReviewRow>
-          
-          <ReviewRow>
-            <div className="header">
-              <span className="name">Lisa Martinez</span>
-              <div className="stars">
-                {[...Array(5)].map((_, i) => <Star key={i} size={14} fill="currentColor" />)}
-              </div>
-            </div>
-            <span className="comment">Great experience, highly recommend!</span>
-            <span className="date">2026-05-12</span>
-          </ReviewRow>
-          
-          <ReviewRow>
-            <div className="header">
-              <span className="name">David Wilson</span>
-              <div className="stars">
-                {[...Array(4)].map((_, i) => <Star key={i} size={14} fill="currentColor" />)}
-                <Star size={14} color="#cbd5e1" />
-              </div>
-            </div>
-            <span className="comment">Professional and knowledgeable.</span>
-            <span className="date">2026-05-10</span>
-          </ReviewRow>
+          ) : (
+            recentReviews.map(review => (
+              <ReviewRow key={review.id}>
+                <div className="header">
+                  <span className="name">{review.isAnonymous ? 'Anonymous' : review.patientName || 'Patient'}</span>
+                  <div className="stars">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={14} fill={i < review.rating ? "currentColor" : "none"} color={i < review.rating ? "currentColor" : "#cbd5e1"} />
+                    ))}
+                  </div>
+                </div>
+                <span className="comment">{review.comment}</span>
+                <span className="date">{review.createdAt ? new Date(review.createdAt).toLocaleDateString() : ''}</span>
+              </ReviewRow>
+            ))
+          )}
 
         </SectionContainer>
       </MainContentGrid>

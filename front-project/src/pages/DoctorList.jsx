@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import styled from 'styled-components';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { doctorService } from '../services/api';
-import { Search, Filter, Star, Clock, MapPin, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Search, Filter, Star, MessageSquare, Info } from 'lucide-react';
 import { Input, Select } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { useTranslation } from 'react-i18next';
@@ -76,7 +76,7 @@ const CheckboxLabel = styled.label`
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: 1fr;
   gap: 1.5rem;
 `;
 
@@ -84,75 +84,87 @@ const DoctorCard = styled.div`
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.lg};
-  padding: 1.5rem;
+  padding: 1.5rem 2rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
   transition: ${({ theme }) => theme.transitions.default};
-  cursor: pointer;
+  position: relative;
 
   &:hover {
     box-shadow: ${({ theme }) => theme.shadows.card};
-    border-color: ${({ theme }) => theme.colors.primary};
   }
 `;
 
-const DoctorHeader = styled.div`
-  display: flex;
-  gap: 1rem;
-`;
-
-const Avatar = styled.div`
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: ${({ theme }) => theme.colors.surfaceHover};
+const RatingPill = styled.div`
+  position: absolute;
+  top: 1.5rem;
+  right: 2rem;
+  background: #fef9c3;
+  color: #854d0e;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.primary};
+  gap: 0.25rem;
+  font-weight: 600;
+  font-size: 0.9rem;
 `;
 
-const DoctorInfo = styled.div`
-  flex: 1;
+const NameSection = styled.div`
   h3 {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     color: ${({ theme }) => theme.colors.text};
     margin-bottom: 0.25rem;
+    font-weight: 600;
   }
   .specialty {
-    color: ${({ theme }) => theme.colors.primary};
-    font-size: 0.9rem;
+    color: #2563eb;
+    font-size: 1rem;
     font-weight: 500;
-    margin-bottom: 0.5rem;
-  }
-  .rating {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    color: #f59e0b;
-    font-size: 0.9rem;
-    font-weight: 600;
   }
 `;
 
-const DoctorDetails = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+const InfoGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
   margin-top: 0.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 
   div {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     color: ${({ theme }) => theme.colors.textMuted};
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+
+    svg {
+      color: #94a3b8;
+    }
   }
+`;
+
+const ActionRow = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+`;
+
+const AvailableBadge = styled.div`
+  background: #dcfce7;
+  color: #166534;
+  padding: 0.35rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-block;
+  text-align: center;
 `;
 
 const DoctorList = () => {
@@ -205,8 +217,8 @@ const DoctorList = () => {
     // Sorting
     result.sort((a, b) => {
       if (sortOption === 'rating') {
-        const avgA = a.reviews?.length ? a.reviews.reduce((sum, r) => sum + r.rating, 0) / a.reviews.length : 0;
-        const avgB = b.reviews?.length ? b.reviews.reduce((sum, r) => sum + r.rating, 0) / b.reviews.length : 0;
+        const avgA = a.averageRating || 0;
+        const avgB = b.averageRating || 0;
         return avgB - avgA;
       }
       if (sortOption === 'name-asc') return (a.lastName || '').localeCompare(b.lastName || '');
@@ -273,34 +285,38 @@ const DoctorList = () => {
             </div>
           ) : (
             filteredDoctors.map(doc => {
-              const reviewCount = doc.reviews?.length || 0;
-              const avgRating = reviewCount > 0 
-                ? (doc.reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount).toFixed(1) 
+              const reviewCount = doc.reviewsCount || 0;
+              const avgRating = doc.averageRating 
+                ? doc.averageRating.toFixed(1) 
                 : t('doctorList.new');
 
               return (
-                <DoctorCard key={doc.id} onClick={() => handleDoctorClick(doc.id)}>
-                  <DoctorHeader>
-                    <Avatar>{doc.firstName?.[0] || 'D'}{doc.lastName?.[0] || 'R'}</Avatar>
-                    <DoctorInfo>
-                      <h3>{t('patientDashboard.dr')} {doc.firstName} {doc.lastName}</h3>
-                      <div className="specialty">{doc.specialization}</div>
-                      <div className="rating">
-                        <Star size={16} fill="#f59e0b" />
-                        {avgRating} {reviewCount > 0 && `(${reviewCount} ${t('doctorList.reviews')})`}
-                      </div>
-                    </DoctorInfo>
-                  </DoctorHeader>
-                  
-                  <DoctorDetails>
-                    <div><MapPin size={16} /> HealthBridge Center</div>
-                    <div><Clock size={16} /> {doc.experienceYears || 10} {t('doctorList.yearsExperience')}</div>
-                    <div><CheckCircle2 size={16} color="#10b981" /> {t('doctorList.availableSoon')}</div>
-                  </DoctorDetails>
+                <DoctorCard key={doc.id}>
+                  <RatingPill>
+                    <Star size={16} fill="#eab308" color="#eab308" />
+                    {avgRating}
+                  </RatingPill>
 
-                  <Button variant="secondary" style={{ marginTop: '0.5rem' }}>
-                    {t('doctorList.viewProfile')} <ChevronRight size={16} />
-                  </Button>
+                  <NameSection>
+                    <h3>{t('patientDashboard.dr')} {doc.firstName} {doc.lastName}</h3>
+                    <div className="specialty">{doc.specialization}</div>
+                  </NameSection>
+
+                  <InfoGrid>
+                    <div><MessageSquare size={18} /> {reviewCount} patient reviews</div>
+                  </InfoGrid>
+
+                  <ActionRow>
+                    <Button onClick={() => navigate(`/patient/book/${doc.id}`, { state: { doctor: doc } })} style={{ background: '#2563eb', color: 'white' }}>
+                      Book Appointment
+                    </Button>
+                    <Button variant="secondary" onClick={() => handleDoctorClick(doc.id)} style={{ background: 'transparent', borderColor: '#cbd5e1' }}>
+                      <Info size={16} style={{ marginRight: '0.5rem' }} /> View Full Profile
+                    </Button>
+                    <div style={{ marginLeft: 'auto' }}>
+                      <AvailableBadge>Available</AvailableBadge>
+                    </div>
+                  </ActionRow>
                 </DoctorCard>
               );
             })

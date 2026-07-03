@@ -16,6 +16,10 @@ public interface AppointmentService {
 
     List<AppointmentDto> findAllAppointmentsByClientId(UUID clientId, RequestFilter filter);
 
+    List<AppointmentDto> findUpcomingAppointments(UUID id);
+
+    List<AppointmentDto> findPreviousAppointments(UUID id);
+
     AppointmentDto createAppointment(AppointmentRequestDto request);
 
     AppointmentDto updateAppointment(AppointmentDto appointmentDto);

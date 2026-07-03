@@ -176,7 +176,12 @@ const AuthPage = () => {
   });
 
   const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    let { name, value } = e.target;
+    // Strip spaces from phone number so it's strictly digits for the backend
+    if (name === 'phoneNumber') {
+      value = value.replace(/[^0-9]/g, '');
+    }
+    setFormData({ ...formData, [name]: value });
     setError('');
   };
 
@@ -316,7 +321,7 @@ const AuthPage = () => {
               <Row>
                 <FormGroup>
                   <Label>{t('auth.dob')}</Label>
-                  <Input required type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleInputChange} />
+                  <Input required type="date" name="dateOfBirth" max={new Date().toISOString().split('T')[0]} value={formData.dateOfBirth} onChange={handleInputChange} />
                 </FormGroup>
                 <FormGroup>
                   <Label>Sex</Label>
@@ -346,9 +351,11 @@ const AuthPage = () => {
                     required 
                     type="tel" 
                     name="phoneNumber" 
+                    pattern="[0-9]{9}"
+                    title="Phone number must be exactly 9 digits"
                     value={formData.phoneNumber} 
                     onChange={handleInputChange} 
-                    placeholder="555 12 34 56" 
+                    placeholder="555123456" 
                     style={{ borderRadius: '0 0.5rem 0.5rem 0', flex: 1 }} 
                   />
                 </div>
@@ -385,7 +392,7 @@ const AuthPage = () => {
           
           <FormGroup>
             <Label>{t('auth.password')}</Label>
-            <Input required type="password" name="password" value={formData.password} onChange={handleInputChange} />
+            <Input required type="password" name="password" minLength={8} maxLength={72} value={formData.password} onChange={handleInputChange} />
           </FormGroup>
 
           <Button type="submit" fullWidth disabled={loading}>

@@ -2,11 +2,16 @@ package ge.appointmentservice.repository;
 
 
 import ge.appointmentservice.model.Doctor;
+import ge.appointmentservice.model.VerificationStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import javax.print.Doc;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,6 +21,14 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
 
 
     Page<Doctor> findAllBy(Pageable pageable);
+
+    Page<Doctor> findAllByVerificationStatus(
+            Pageable pageable, VerificationStatus verificationStatus);
+
+    Page<Doctor> findAllByVerificationStatusAndSpecialization(
+            Pageable pageable,
+            VerificationStatus verificationStatus,
+            String specialization);
 
     List<Doctor> findByFirstNameAndLastName(String firstName, String lastName);
 
@@ -27,6 +40,17 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
 
     Optional<Doctor> findByEmail(String email);
 
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(
+            value = """
+                    UPDATE doctors d
+                    SET average_rating = COALESCE(
+                                ( SELECT AVG(r.rating) FROM reviews where r.doctor_id = :doctorId), 0),
+                                reviews_count = (SELECT COUNT(*) FROM reviews r WHERE r.doctor_id = :doctorId) 
+                                WHERE d.id = :doctorId
+                    """, nativeQuery = true)
+    void recalculateRating(@Param("doctorId") UUID doctorId);
 
     // List<Doctor> findClosestByFreeTime(LocalDateTime time);
 

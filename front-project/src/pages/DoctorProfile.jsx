@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doctorService } from '../services/api';
 import { Button } from '../components/ui/Button';
-import { Star, Clock, MapPin, CheckCircle2, ChevronLeft, Calendar } from 'lucide-react';
+import { Star, CheckCircle2, ChevronLeft, Calendar } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const PageContainer = styled.div`
@@ -152,9 +152,9 @@ const DoctorProfile = () => {
   if (loading) return <PageContainer>{t('doctorProfile.loading')}</PageContainer>;
   if (!doctor) return <PageContainer>{t('doctorProfile.notFound')}</PageContainer>;
 
-  const reviewCount = doctor.reviews?.length || 0;
-  const avgRating = reviewCount > 0 
-    ? (doctor.reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount).toFixed(1) 
+  const reviewCount = doctor.reviewsCount || 0;
+  const avgRating = doctor.averageRating
+    ? doctor.averageRating.toFixed(1)
     : 'N/A';
 
   return (
@@ -174,14 +174,6 @@ const DoctorProfile = () => {
               <span><Star size={16} color="#f59e0b" /> {t('doctorProfile.rating')}</span>
               <span>{avgRating} {reviewCount > 0 && `(${reviewCount})`}</span>
             </div>
-            <div>
-              <span><Clock size={16} /> {t('doctorProfile.experience')}</span>
-              <span>10 {t('doctorProfile.years')}</span>
-            </div>
-            <div>
-              <span><MapPin size={16} /> {t('doctorProfile.clinic')}</span>
-              <span>HealthBridge Center</span>
-            </div>
           </StatsGrid>
 
           <Button 
@@ -196,10 +188,6 @@ const DoctorProfile = () => {
       <Section>
         <h2>{t('doctorProfile.about')}</h2>
         <p>{doctor.professionalDescription || t('doctorProfile.noDescription')}</p>
-        <p style={{ marginTop: '1rem' }}>
-          {t('patientDashboard.dr')} {doctor.lastName} {t('doctorProfile.skilledIn')} {doctor.specialization}. 
-          {t('doctorProfile.committedTo')}
-        </p>
       </Section>
     </PageContainer>
   );

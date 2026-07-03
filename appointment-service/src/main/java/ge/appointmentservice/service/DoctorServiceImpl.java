@@ -8,11 +8,13 @@ import ge.appointmentservice.dto.kafka.DoctorRegisteredEvent;
 import ge.appointmentservice.kafka.DoctorKafkaProducer;
 import ge.appointmentservice.mapper.DoctorMapper;
 import ge.appointmentservice.model.Doctor;
+import ge.appointmentservice.model.Specialization;
 import ge.appointmentservice.model.VerificationStatus;
 import ge.appointmentservice.repository.DoctorRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +47,46 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     @Override
+    public List<DoctorDto> findAllPublicDoctors(RequestFilter filter) {
+
+        int pageSize = filter.pageSize() != null
+                ? filter.pageSize() : 10;
+        int pageNumber = filter.pageNumber() != null
+                ? filter.pageNumber() : 0;
+
+        var pageable = Pageable.ofSize(pageSize).withPage(pageNumber);
+
+        return doctorRepository.findAllByVerificationStatus(pageable, VerificationStatus.APPROVED)
+                .stream().map(doctorMapper::toDto).toList();
+    }
+
+    @Override
+    public List<DoctorDto> findAllPublicDoctorsBySpecialization(RequestFilter filter, Specialization specialization) {
+
+        int pageSize = filter.pageSize() != null
+                ? filter.pageSize() : 10;
+        int pageNumber = filter.pageNumber() != null
+                ? filter.pageNumber() : 0;
+
+        var pageable = Pageable.ofSize(pageSize).withPage(pageNumber);
+
+        Page<Doctor> doctors = specialization != null
+                ? doctorRepository.findAllByVerificationStatusAndSpecialization(
+                pageable, VerificationStatus.APPROVED, specialization.name())
+                : doctorRepository.findAllByVerificationStatus(
+                pageable, VerificationStatus.APPROVED);
+
+        return doctors.stream().map(doctorMapper::toDto).toList();
+    }
+
+
+    @Override
+    public List<DoctorDto> findAllDoctorsForAdmin() {
+        return List.of();
+    }
+
+
+    @Override
     public DoctorDto findDoctorById(UUID id) {
         return doctorMapper.toDto(doctorRepository.findById(id).orElseThrow(EntityNotFoundException::new));
     }
@@ -57,7 +99,6 @@ public class DoctorServiceImpl implements DoctorService {
         doctor.setKeycloakUserId(keycloakId);
         doctor.setVerificationStatus(VerificationStatus.PENDING);
         Doctor savedDoctor = doctorRepository.save(doctor);
-
 
 
         var event = new DoctorRegisteredEvent(
@@ -105,6 +146,7 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
 
+    //updatePassword???
 
 
     @Override

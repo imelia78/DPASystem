@@ -17,7 +17,6 @@ public class ClientMapper {
                 .lastName(clientDto.lastName())
                 .sex(clientDto.sex())
                 .email(clientDto.email())
-                .password(clientDto.password())
                 .appointments(clientDto.appointments())
                 .dateOfBirth(clientDto.dateOfBirth())
                 .reviews(clientDto.reviews())
@@ -32,7 +31,6 @@ public class ClientMapper {
                 .lastName(request.lastName())
                 .dateOfBirth(request.dateOfBirth())
                 .email(request.email())
-                .password(request.password())
                 .sex(request.sex())
                 .phoneNumber(request.phoneNumber())
                 .build();
@@ -46,7 +44,6 @@ public class ClientMapper {
                 .lastName(client.getLastName())
                 .sex(client.getSex())
                 .dateOfBirth(client.getDateOfBirth())
-                .password(client.getPassword())
                 .reviews(client.getReviews())
                 .appointments(client.getAppointments())
                 .email(client.getEmail())

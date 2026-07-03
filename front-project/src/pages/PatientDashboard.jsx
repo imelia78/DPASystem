@@ -184,26 +184,36 @@ const PatientDashboard = () => {
   const [user, setUser] = useState(null);
   const [appointments, setAppointments] = useState([]);
   const [activeTab, setActiveTab] = useState('upcoming');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem('user');
     if (stored) {
       const parsedUser = JSON.parse(stored);
       setUser(parsedUser);
-      if (parsedUser.id) {
-        appointmentService.getByClient(parsedUser.id).then(res => {
-          setAppointments(res.data);
-        }).catch(err => console.error("Failed to fetch appointments", err));
-      }
     } else {
       navigate('/');
     }
   }, [navigate]);
 
-  if (!user) return null;
+  useEffect(() => {
+    if (user?.id) {
+      setLoading(true);
+      if (activeTab === 'upcoming') {
+        appointmentService.getUpcomingByClient(user.id)
+          .then(res => setAppointments(res.data))
+          .catch(err => console.error("Failed to fetch upcoming", err))
+          .finally(() => setLoading(false));
+      } else {
+        appointmentService.getHistoryByClient(user.id)
+          .then(res => setAppointments(res.data))
+          .catch(err => console.error("Failed to fetch history", err))
+          .finally(() => setLoading(false));
+      }
+    }
+  }, [user, activeTab]);
 
-  const upcoming = appointments.filter(a => a.appointmentStatus === 'ACTIVE' || a.appointmentStatus === 'PENDING' || !a.appointmentStatus);
-  const completed = appointments.filter(a => a.appointmentStatus === 'COMPLETED');
+  if (!user) return null;
 
   return (
     <DashboardContainer>
@@ -234,60 +244,34 @@ const PatientDashboard = () => {
           </TabButton>
         </TabsContainer>
         
-        {activeTab === 'upcoming' && (
-          upcoming.length === 0 ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: '#64748b' }}>
-              {t('patientDashboard.noUpcomingApps')}
-            </div>
-          ) : (
-            <div>
-              {upcoming.map(app => (
-                <ListItem key={app.id}>
-                  <DoctorInfo>
-                    <Avatar>
-                      <UserIcon size={24} />
-                    </Avatar>
-                    <DoctorDetails>
-                      <h3>{t('patientDashboard.dr')} {app.doctor?.firstName} {app.doctor?.lastName}</h3>
-                      <p>{app.doctor?.specialization}</p>
-                    </DoctorDetails>
-                  </DoctorInfo>
-                  <TimeInfo>
-                    <h4>{app.appointmentDateTime ? format(new Date(app.appointmentDateTime), 'yyyy-MM-dd') : 'TBD'}</h4>
-                    <p>{app.appointmentDateTime ? format(new Date(app.appointmentDateTime), 'hh:mm a') : 'TBD'}</p>
-                  </TimeInfo>
-                </ListItem>
-              ))}
-            </div>
-          )
-        )}
-
-        {activeTab === 'completed' && (
-          completed.length === 0 ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: '#64748b' }}>
-              {t('patientDashboard.noCompletedApps')}
-            </div>
-          ) : (
-            <div>
-              {completed.map(app => (
-                <ListItem key={app.id}>
-                  <DoctorInfo>
-                    <Avatar>
-                      <UserIcon size={24} />
-                    </Avatar>
-                    <DoctorDetails>
-                      <h3>{t('patientDashboard.dr')} {app.doctor?.firstName} {app.doctor?.lastName}</h3>
-                      <p>{app.doctor?.specialization}</p>
-                    </DoctorDetails>
-                  </DoctorInfo>
-                  <TimeInfo>
-                    <h4>{app.appointmentDateTime ? format(new Date(app.appointmentDateTime), 'yyyy-MM-dd') : 'TBD'}</h4>
-                    <p>{app.appointmentDateTime ? format(new Date(app.appointmentDateTime), 'hh:mm a') : 'TBD'}</p>
-                  </TimeInfo>
-                </ListItem>
-              ))}
-            </div>
-          )
+        {loading ? (
+          <div style={{ padding: '3rem', textAlign: 'center', color: '#64748b' }}>
+            Loading...
+          </div>
+        ) : appointments.length === 0 ? (
+          <div style={{ padding: '3rem', textAlign: 'center', color: '#64748b' }}>
+            {activeTab === 'upcoming' ? t('patientDashboard.noUpcomingApps') : t('patientDashboard.noCompletedApps')}
+          </div>
+        ) : (
+          <div>
+            {appointments.map(app => (
+              <ListItem key={app.id}>
+                <DoctorInfo>
+                  <Avatar>
+                    <UserIcon size={24} />
+                  </Avatar>
+                  <DoctorDetails>
+                    <h3>{t('patientDashboard.dr')} {app.doctor?.firstName} {app.doctor?.lastName}</h3>
+                    <p>{app.doctor?.specialization}</p>
+                  </DoctorDetails>
+                </DoctorInfo>
+                <TimeInfo>
+                  <h4>{app.appointmentDateTime ? format(new Date(app.appointmentDateTime), 'yyyy-MM-dd') : 'TBD'}</h4>
+                  <p>{app.appointmentDateTime ? format(new Date(app.appointmentDateTime), 'hh:mm a') : 'TBD'}</p>
+                </TimeInfo>
+              </ListItem>
+            ))}
+          </div>
         )}
       </ListContainer>
 

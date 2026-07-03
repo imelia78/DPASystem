@@ -107,20 +107,36 @@ public class ReviewServiceImpl implements ReviewService {
 
         Review review = reviewMapper.toEntity(reviewDto, appointment, doctor, client);
 
-        var saved = reviewRepository.save(review);
+        Review saved = reviewRepository.save(review);
+
+        var result = reviewMapper.toDto(saved);
+
+        doctorRepository.recalculateRating(doctor.getId());
+        log.info("Doctor average rating recalculated successfully!");
+
         log.info("Review successfully created");
-        return reviewMapper.toDto(saved);
+        return result;
 
     }
 
+
     @Override
+    @Transactional
     public ReviewDto updateReview(UUID id, ReviewDto reviewDto) {
         var review = reviewRepository.findById(id).orElseThrow(EntityNotFoundException::new);
 
         log.info("Updating review with id {}", id);
         reviewMapper.updateEntity(reviewDto, review);
+
+        var result = reviewMapper.toDto(review);
+
+        doctorRepository.recalculateRating(result.doctorId());
+
+        log.info("Rating recalculation after updating review rating processed successfully ");
+
+
         log.info("Review with id {} successfully updated", id);
-        return reviewMapper.toDto(review);
+        return result;
     }
 
     @Override
@@ -134,21 +150,36 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    @Transactional
     public ReviewDto updateReviewRating(UUID id, Double rating) {
         var review = reviewRepository.findById(id).orElseThrow(EntityNotFoundException::new);
 
         log.info("updating rating for review with id {}", id);
         review.setRating(rating);
-        return reviewMapper.toDto(review);
+
+        var result = reviewMapper.toDto(review);
+        doctorRepository.recalculateRating(result.doctorId());
+
+        log.info("Rating recalculation after updating review rating processed successfully ");
+
+
+        log.info("Review with id {} successfully updated", id);
+        return result;
     }
 
 
     @Override
+    @Transactional
     public void deleteReviewById(UUID id) {
         var review = reviewRepository.findById(id).orElseThrow(EntityNotFoundException::new);
 
+        var doctorId = review.getDoctor().getId();
+
         log.info("deleting review with id {}", id);
-        reviewRepository.deleteById(id);
+        reviewRepository.delete(review);
+        doctorRepository.recalculateRating(doctorId);
+        log.info("Rating recalculation after deleting review  processed successfully ");
+
         log.info("Review  with id {} has been deleted successfully", id);
 
     }

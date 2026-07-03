@@ -24,7 +24,7 @@ spring:
 
 
   mail:
-    username:
+    username: healthbridge64@gmail.com
     password:
     port: 587
     host: smtp.gmail.com

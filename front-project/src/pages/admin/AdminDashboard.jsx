@@ -173,7 +173,7 @@ const AdminDashboard = () => {
 
   const fetchDoctors = async () => {
     try {
-      const res = await doctorService.getAll(100, 0);
+      const res = await adminService.getAllDoctors(100, 0);
       // Temporarily treating undefined verificationStatus as PENDING until backend is fixed
       const pending = res.data.filter(d => !d.verificationStatus || d.verificationStatus === 'PENDING');
       setDoctors(pending);

@@ -24,10 +24,16 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
     Optional<Appointment> findAppointmentById(UUID id);
 
 
+
     Boolean existsAppointmentByAppointmentDateTimeAndClient(LocalDateTime appointmentDateTime, Client client);
 
 
-    List<Appointment> findAllByClient_Id(UUID clientId, Pageable pageable); // All appointments related with particular client
+
+    List<Appointment> findAllByClient_Id(UUID clientId, Pageable pageable);// All appointments related with particular client
+
+    List<Appointment> findAllByClient_IdAndAppointmentDateTimeAfterAndAppointmentStatus(UUID clientId, LocalDateTime now, AppointmentStatus status);
+
+    List<Appointment> findAllByClient_IdAndAppointmentDateTimeBeforeAndAppointmentStatus(UUID clientId, LocalDateTime now, AppointmentStatus status);
 
     List<Appointment> findAllByDoctor_Id(UUID doctorId, Pageable pageable); // All appointments related with particular doctor
 

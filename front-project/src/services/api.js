@@ -49,6 +49,8 @@ export const doctorService = {
 export const appointmentService = {
   create: (appointmentData) => api.post('/appointments', appointmentData),
   getByClient: (clientId, pageSize = 100, pageNumber = 0) => api.get(`/appointments/clients/${clientId}?pageSize=${pageSize}&pageNumber=${pageNumber}`),
+  getUpcomingByClient: (clientId) => api.get(`/appointments/client/${clientId}/upcoming`),
+  getHistoryByClient: (clientId) => api.get(`/appointments/client/${clientId}/history`),
   getAll: (pageSize = 100, pageNumber = 0) => api.get(`/appointments?pageSize=${pageSize}&pageNumber=${pageNumber}`),
   getByStatus: (status) => api.get(`/appointments/status?status=${status}`),
   updateStatus: (id, statusData) => api.patch(`/appointments/${id}/status`, statusData),
@@ -69,6 +71,7 @@ export const reviewService = {
 
 // Admin
 export const adminService = {
+  getAllDoctors: (pageSize = 100, pageNumber = 0) => api.get(`/doctors/all?pageSize=${pageSize}&pageNumber=${pageNumber}`),
   approveDoctor: (id) => api.patch(`/admin/${id}/approve`),
   rejectDoctor: (id, comment) => api.patch(`/admin/${id}/reject`, { comment }),
 };

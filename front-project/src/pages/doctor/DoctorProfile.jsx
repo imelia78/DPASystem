@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { User, Mail, Phone, Award, ShieldCheck, FileText, CheckCircle } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
+import { doctorService } from '../../services/api';
 import { useTranslation } from 'react-i18next';
 
 const PageContainer = styled.div`
@@ -91,9 +92,25 @@ const AdminCommentBox = styled.div`
 
 const DoctorProfile = () => {
   const { t } = useTranslation();
-  // In a real scenario, this would come from a context or API fetch
-  const userStr = localStorage.getItem('user');
-  const user = userStr ? JSON.parse(userStr) : {};
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await doctorService.getMe();
+        setUser(response.data);
+      } catch (error) {
+        console.error('Failed to fetch profile', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  if (loading) return <PageContainer style={{ padding: '3rem', textAlign: 'center' }}>Loading profile...</PageContainer>;
+  if (!user) return null;
 
   return (
     <PageContainer>

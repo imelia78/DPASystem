@@ -5,8 +5,11 @@ import ge.appointmentservice.dto.DoctorDto;
 import ge.appointmentservice.dto.UpdatePhoneDto;
 import ge.appointmentservice.dto.UpdateProfessionalDescriptionDto;
 import ge.appointmentservice.mapper.DoctorMapper;
+import ge.appointmentservice.model.Doctor;
+import ge.appointmentservice.model.Specialization;
 import ge.appointmentservice.service.DoctorService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -30,8 +33,8 @@ public class DoctorController {
     private final DoctorMapper doctorMapper;
 
 
-    @PreAuthorize("isAuthenticated()")
-    @GetMapping
+    @PreAuthorize("hasAuthority('dpasystem.ADMIN')")
+    @GetMapping("/all")
     public ResponseEntity<List<DoctorDto>> getAllDoctors(
             @RequestParam("pageSize") Integer pageSize,
             @RequestParam("pageNumber") Integer pageNumber
@@ -40,6 +43,21 @@ public class DoctorController {
         var doctors = doctorService.findAllDoctorsByPages(filter);
         return ResponseEntity.ok(doctors);
     }
+
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping
+    public ResponseEntity<List<DoctorDto>> getAllPublicDoctors(
+            @RequestParam("pageSize") Integer pageSize,
+            @RequestParam("pageNumber") Integer pageNumber,
+            @RequestParam(value = "specialization", required = false) Specialization specialization
+    ){
+        var filter = new RequestFilter(pageSize, pageNumber);
+        var approvedDoctors = doctorService.findAllPublicDoctorsBySpecialization(filter,specialization);
+        return ResponseEntity.ok(approvedDoctors);
+    }
+
+
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
@@ -95,7 +113,8 @@ public class DoctorController {
     @PreAuthorize("hasAnyAuthority('dpasystem.ADMIN','dpasystem.DOCTOR','dpasystem.DOCTOR_PENDING')")
     @PatchMapping("/{id}/phone")
     @Transactional
-    public ResponseEntity<DoctorDto> updateDoctorPhoneNumber(@PathVariable UUID id, @RequestBody UpdatePhoneDto phoneDto) {
+    public ResponseEntity<DoctorDto> updateDoctorPhoneNumber(@PathVariable UUID id,
+                                                             @Valid @RequestBody UpdatePhoneDto phoneDto) {
         var doctor = doctorService.updatePhoneNumber(id, phoneDto.phoneNumber());
         return ResponseEntity.ok(doctor);
 

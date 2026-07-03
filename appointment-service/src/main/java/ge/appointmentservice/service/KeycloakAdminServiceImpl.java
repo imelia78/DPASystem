@@ -14,6 +14,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -266,13 +267,17 @@ public class KeycloakAdminServiceImpl implements KeycloakAdminService {
         } catch (HttpClientErrorException.Unauthorized e) {
             log.warn("Failed authentication attempt for user {}", username);
 
-            throw new BadCredentialsException("Invalid username or password");
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Invalid username or password!"
+            );
 
         } catch (RestClientException e) {
 
-            throw new IllegalStateException(
-                    "Unable to communicate with Keycloak",
-                    e);
+            throw new ResponseStatusException(
+                    HttpStatus.SERVICE_UNAVAILABLE,
+                    "Authentication service unavailable!"
+            );
 
         }
 

@@ -1,7 +1,10 @@
 package ge.appointmentservice.dto.auth;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
 public record LoginRequest(
-        String username,  //email
-        String password
+        @NotBlank @Email String username,  //email
+        @NotBlank String password
 ) {
 }
