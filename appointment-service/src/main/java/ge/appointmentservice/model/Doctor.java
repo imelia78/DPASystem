@@ -1,5 +1,6 @@
 package ge.appointmentservice.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -52,8 +53,6 @@ public class Doctor {
     @Column(nullable = false,unique = true)
     private String email;
 
-  /*  @Column(nullable = false)
-    private String password;*/
 
     @Column(nullable = true)
     private String adminComment;
@@ -80,10 +79,12 @@ public class Doctor {
     private  VerificationStatus verificationStatus;
 
 
+    @JsonIgnore
     @OneToMany(mappedBy = "doctor", fetch = FetchType.LAZY)
     private List<Appointment> appointments;
 
 
+    @JsonIgnore
     @OneToMany(mappedBy = "doctor", fetch = FetchType.LAZY)
     private List<Review> reviews;
 

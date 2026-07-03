@@ -2,6 +2,7 @@ package ge.appointmentservice.repository;
 
 
 import ge.appointmentservice.model.Doctor;
+import ge.appointmentservice.model.VerificationStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,6 +20,9 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
 
 
     Page<Doctor> findAllBy(Pageable pageable);
+
+    Page<Doctor> findAllByVerificationStatusContainingIgnoreCase(
+            Pageable pageable, VerificationStatus verificationStatus);
 
     List<Doctor> findByFirstNameAndLastName(String firstName, String lastName);
 

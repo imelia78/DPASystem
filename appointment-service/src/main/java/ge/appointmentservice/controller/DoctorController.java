@@ -5,6 +5,7 @@ import ge.appointmentservice.dto.DoctorDto;
 import ge.appointmentservice.dto.UpdatePhoneDto;
 import ge.appointmentservice.dto.UpdateProfessionalDescriptionDto;
 import ge.appointmentservice.mapper.DoctorMapper;
+import ge.appointmentservice.model.Doctor;
 import ge.appointmentservice.service.DoctorService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -31,8 +32,8 @@ public class DoctorController {
     private final DoctorMapper doctorMapper;
 
 
-    @PreAuthorize("isAuthenticated()")
-    @GetMapping
+    @PreAuthorize("hasAuthority('dpasystem.ADMIN')")
+    @GetMapping("/all")
     public ResponseEntity<List<DoctorDto>> getAllDoctors(
             @RequestParam("pageSize") Integer pageSize,
             @RequestParam("pageNumber") Integer pageNumber
@@ -41,6 +42,20 @@ public class DoctorController {
         var doctors = doctorService.findAllDoctorsByPages(filter);
         return ResponseEntity.ok(doctors);
     }
+
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping
+    public ResponseEntity<List<DoctorDto>> getAllPublicDoctors(
+            @RequestParam("pageSize") Integer pageSize,
+            @RequestParam("pageNumber") Integer pageNumber
+    ){
+        var filter = new RequestFilter(pageSize, pageNumber);
+        var approvedDoctors = doctorService.findAllPublicDoctors(filter);
+        return ResponseEntity.ok(approvedDoctors);
+    }
+
+
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")

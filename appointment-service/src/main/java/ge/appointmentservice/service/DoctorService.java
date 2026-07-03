@@ -13,6 +13,10 @@ public interface DoctorService {
 
     List<DoctorDto> findAllDoctorsByPages(RequestFilter filter);
 
+    List<DoctorDto> findAllPublicDoctors(RequestFilter filter);
+
+    List<DoctorDto> findAllDoctorsForAdmin();
+
     DoctorDto findDoctorById(UUID uuid);
 
     DoctorDto createDoctor(RegisterDoctorRequest request, String keycloakId);

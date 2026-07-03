@@ -45,6 +45,26 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     @Override
+    public List<DoctorDto> findAllPublicDoctors(RequestFilter filter) {
+
+        int pageSize = filter.pageSize() != null
+                ? filter.pageSize() : 10;
+        int pageNumber = filter.pageNumber() != null
+                ? filter.pageNumber() : 0;
+
+        var pageable = Pageable.ofSize(pageSize).withPage(pageNumber);
+
+        return doctorRepository.findAllByVerificationStatusContainingIgnoreCase(pageable, VerificationStatus.APPROVED)
+                .stream().map(doctorMapper::toDto).toList();
+    }
+
+    @Override
+    public List<DoctorDto> findAllDoctorsForAdmin() {
+        return List.of();
+    }
+
+
+    @Override
     public DoctorDto findDoctorById(UUID id) {
         return doctorMapper.toDto(doctorRepository.findById(id).orElseThrow(EntityNotFoundException::new));
     }

@@ -1,6 +1,7 @@
 package ge.appointmentservice.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -42,8 +43,6 @@ public class Client {
     @Column(nullable = false, unique = true)
     private String email;
 
-   /* @Column(nullable = false)
-    private String password;*/
 
     @Enumerated(EnumType.STRING)
     private Sex sex;
@@ -53,10 +52,12 @@ public class Client {
     private String phoneNumber;
 
 
-    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
     private List<Review> reviews;
 
-    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
     private List<Appointment> appointments;
 
 
@@ -70,12 +71,11 @@ public class Client {
 
 
     public boolean retireeVerification(){
-      var status = switch(sex){
-              case MALE -> computeAge() >= MALE_RETIREMENT_AGE;
-            case FEMALE -> computeAge() >= FEMALE_RETIREMENT_AGE;
-        };
 
-        return status;
+        return switch(sex){
+                case MALE -> computeAge() >= MALE_RETIREMENT_AGE;
+              case FEMALE -> computeAge() >= FEMALE_RETIREMENT_AGE;
+          };
     }
 
 }
