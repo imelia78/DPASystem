@@ -13,6 +13,7 @@ public class AppointmentMapper {
     public AppointmentDto toDto(Appointment appointment) {
 
         return AppointmentDto.builder()
+                .id(appointment.getId())
                 .appointmentDateTime(appointment.getAppointmentDateTime())
                 .appointmentDuration(appointment.getDuration())
                 .price(appointment.getPrice())

@@ -46,7 +46,7 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
             value = """
                     UPDATE doctors d
                     SET average_rating = COALESCE(
-                                ( SELECT AVG(r.rating) FROM reviews where r.doctor_id = :doctorId), 0),
+                                ( SELECT AVG(r.rating) FROM reviews r where r.doctor_id = :doctorId), 0),
                                 reviews_count = (SELECT COUNT(*) FROM reviews r WHERE r.doctor_id = :doctorId) 
                                 WHERE d.id = :doctorId
                     """, nativeQuery = true)

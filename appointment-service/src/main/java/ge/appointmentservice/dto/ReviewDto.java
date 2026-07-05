@@ -12,7 +12,7 @@ public record ReviewDto(
         Double rating,
         LocalDateTime createdAt,
         UUID appointmentId,
-        UUID doctorId,
-        UUID clientId
+        UUID doctorId, //TODO redundant
+        UUID clientId //TODO redundant
 ) {
 }

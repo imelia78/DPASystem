@@ -1,6 +1,7 @@
 package ge.appointmentservice.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -42,7 +43,8 @@ public class Appointment {
     @JoinColumn(name = "doctor_id", nullable = false)
     private Doctor doctor;
 
-    @OneToOne(mappedBy = "appointment", cascade = CascadeType.ALL)
+    @JsonIgnore
+    @OneToOne(mappedBy = "appointment")
     private Review review;
 
     //private Discount discount;
