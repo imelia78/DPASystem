@@ -111,7 +111,22 @@ const Layout = () => {
 
   // Global authorization check to prevent the "back button" bug
   useEffect(() => {
-    if (!localStorage.getItem('user')) {
+    const storedUser = localStorage.getItem('user');
+    if (!storedUser) {
+      navigate('/', { replace: true });
+      return;
+    }
+    
+    try {
+      const parsedUser = JSON.parse(storedUser);
+      if (parsedUser.role === 'doctor') {
+        navigate('/doctor/dashboard', { replace: true });
+      } else if (parsedUser.role === 'admin') {
+        navigate('/admin/dashboard', { replace: true });
+      } else if (parsedUser.role !== 'patient') {
+        navigate('/', { replace: true });
+      }
+    } catch (e) {
       navigate('/', { replace: true });
     }
   }, [location.pathname, navigate]);

@@ -6,6 +6,8 @@ import { Search, Filter, Star, MessageSquare, Info } from 'lucide-react';
 import { Input, Select } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { useTranslation } from 'react-i18next';
+import { extractAvatar } from '../utils/avatarUtils';
+import { PROCEDURE_TYPES } from '../config/constants';
 
 const PageContainer = styled.div`
   display: flex;
@@ -26,6 +28,27 @@ const Header = styled.div`
   p {
     color: ${({ theme }) => theme.colors.primary};
     font-weight: 500;
+  }
+`;
+
+const Avatar = styled.div`
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: ${({ theme }) => theme.colors.surfaceHover};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 700;
+  color: ${({ theme }) => theme.colors.primary};
+  margin-bottom: 1rem;
+  overflow: hidden;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 `;
 
@@ -84,22 +107,40 @@ const DoctorCard = styled.div`
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.lg};
-  padding: 1.5rem 2rem;
+  padding: 1.5rem;
   display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+  flex-direction: row;
+  align-items: center;
+  gap: 1.5rem;
   transition: ${({ theme }) => theme.transitions.default};
-  position: relative;
+  cursor: pointer;
 
   &:hover {
     box-shadow: ${({ theme }) => theme.shadows.card};
+    transform: translateY(-2px);
+  }
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: flex-start;
   }
 `;
 
+const MainInfo = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+`;
+
 const RatingPill = styled.div`
-  position: absolute;
-  top: 1.5rem;
-  right: 2rem;
   background: #fef9c3;
   color: #854d0e;
   padding: 0.25rem 0.75rem;
@@ -113,47 +154,49 @@ const RatingPill = styled.div`
 
 const NameSection = styled.div`
   h3 {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     color: ${({ theme }) => theme.colors.text};
     margin-bottom: 0.25rem;
     font-weight: 600;
   }
   .specialty {
     color: #2563eb;
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 500;
   }
 `;
 
-const InfoGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-top: 0.5rem;
+const BioSnippet = styled.div`
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-size: 0.9rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`;
 
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
+const InfoGrid = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-size: 0.9rem;
 
   div {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    color: ${({ theme }) => theme.colors.textMuted};
-    font-size: 0.95rem;
-
-    svg {
-      color: #94a3b8;
-    }
+    gap: 0.4rem;
   }
 `;
 
 const ActionRow = styled.div`
   display: flex;
-  gap: 1rem;
-  margin-top: 0.5rem;
+  justify-content: space-between;
   align-items: center;
+  margin-top: 0.5rem;
   flex-wrap: wrap;
+  gap: 1rem;
 `;
 
 const AvailableBadge = styled.div`
@@ -167,12 +210,22 @@ const AvailableBadge = styled.div`
   text-align: center;
 `;
 
+const parseBackendDate = (dt) => {
+  if (!dt) return null;
+  if (Array.isArray(dt)) {
+    const [y, m, d, h, min] = dt;
+    return new Date(y, m - 1, d, h, min);
+  }
+  return new Date(dt);
+};
+
 const DoctorList = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const subtype = searchParams.get('subtype');
   const category = searchParams.get('category');
+  const loggedInUser = JSON.parse(localStorage.getItem('user') || '{}');
 
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -197,6 +250,11 @@ const DoctorList = () => {
   const filteredDoctors = useMemo(() => {
     let result = doctors;
 
+    // Filter out the logged-in doctor
+    if (loggedInUser.role === 'doctor' && loggedInUser.id) {
+      result = result.filter(doc => doc.id !== loggedInUser.id);
+    }
+
     // Filter by procedure subtype or category if specified
     if (subtype) {
       result = result.filter(doc => doc.specialization?.toLowerCase().includes(subtype.toLowerCase()));
@@ -212,6 +270,39 @@ const DoctorList = () => {
         doc.lastName?.toLowerCase().includes(lowerQ) ||
         (doc.specialization || '').toLowerCase().includes(lowerQ)
       );
+    }
+
+    // Available within 2 weeks filter
+    if (availableWithin2Weeks) {
+      const now = new Date();
+      const twoWeeksFromNow = new Date();
+      twoWeeksFromNow.setDate(now.getDate() + 14);
+
+      result = result.filter(doc => {
+        // Calculate total capacity
+        const specName = (doc.specialization || '').toUpperCase().replace(/\s+/g, '_');
+        const spec = PROCEDURE_TYPES.find(p => p.category.toUpperCase().replace(/\s+/g, '_') === specName);
+        let maxDur = 30;
+        if (spec && spec.subtypes && spec.subtypes.length > 0) {
+          maxDur = Math.max(...spec.subtypes.map(s => s.duration));
+        }
+        const interval = maxDur + 15;
+        const slotsPerDay = Math.floor((17 * 60 - 9 * 60) / interval);
+        const totalCapacity = slotsPerDay * 14;
+
+        // Count booked slots in next 14 days
+        let bookedCount = 0;
+        if (doc.appointments) {
+          doc.appointments.forEach(app => {
+            if (app.appointmentStatus === 'REJECTED' || app.appointmentStatus === 'CANCELLED') return;
+            const d = parseBackendDate(app.appointmentDateTime);
+            if (d && d >= now && d <= twoWeeksFromNow) {
+              bookedCount++;
+            }
+          });
+        }
+        return bookedCount < totalCapacity;
+      });
     }
 
     // Sorting
@@ -230,7 +321,11 @@ const DoctorList = () => {
   }, [doctors, subtype, category, searchQuery, availableWithin2Weeks, sortOption]);
 
   const handleDoctorClick = (docId) => {
-    navigate(`/patient/doctor/${docId}`);
+    if (loggedInUser?.role === 'doctor') {
+      navigate(`/doctor/view-profile/${docId}`);
+    } else {
+      navigate(`/patient/doctor/${docId}`);
+    }
   };
 
   return (
@@ -284,39 +379,54 @@ const DoctorList = () => {
               {t('doctorList.noDoctorsFound')}
             </div>
           ) : (
-            filteredDoctors.map(doc => {
-              const reviewCount = doc.reviewsCount || 0;
-              const avgRating = doc.averageRating 
-                ? doc.averageRating.toFixed(1) 
+            filteredDoctors.map(doctor => {
+              const reviewCount = doctor.reviewsCount || 0;
+              const avgRating = doctor.averageRating 
+                ? doctor.averageRating.toFixed(1) 
                 : t('doctorList.new');
 
               return (
-                <DoctorCard key={doc.id}>
-                  <RatingPill>
-                    <Star size={16} fill="#eab308" color="#eab308" />
-                    {avgRating}
-                  </RatingPill>
+                <DoctorCard key={doctor.id} onClick={() => handleDoctorClick(doctor.id)}>
+                  <Avatar style={{ marginBottom: 0, alignSelf: 'flex-start' }}>
+                    {extractAvatar(doctor.professionalDescription).photoUrl ? (
+                      <img src={extractAvatar(doctor.professionalDescription).photoUrl} alt="Avatar" />
+                    ) : (
+                      <>{doctor.firstName?.[0] || 'D'}{doctor.lastName?.[0] || 'R'}</>
+                    )}
+                  </Avatar>
 
-                  <NameSection>
-                    <h3>{t('patientDashboard.dr')} {doc.firstName} {doc.lastName}</h3>
-                    <div className="specialty">{doc.specialization}</div>
-                  </NameSection>
+                  <MainInfo>
+                    <HeaderRow>
+                      <NameSection>
+                        <h3>{t('patientDashboard.dr')} {doctor.firstName} {doctor.lastName}</h3>
+                        <div className="specialty">{doctor.specialization}</div>
+                      </NameSection>
+                      
+                      <RatingPill>
+                        <Star size={16} fill="#eab308" color="#eab308" />
+                        {avgRating}
+                      </RatingPill>
+                    </HeaderRow>
 
-                  <InfoGrid>
-                    <div><MessageSquare size={18} /> {reviewCount} patient reviews</div>
-                  </InfoGrid>
+                    <BioSnippet>
+                      {extractAvatar(doctor.professionalDescription).cleanBio}
+                    </BioSnippet>
 
-                  <ActionRow>
-                    <Button onClick={() => navigate(`/patient/book/${doc.id}`, { state: { doctor: doc } })} style={{ background: '#2563eb', color: 'white' }}>
-                      Book Appointment
-                    </Button>
-                    <Button variant="secondary" onClick={() => handleDoctorClick(doc.id)} style={{ background: 'transparent', borderColor: '#cbd5e1' }}>
-                      <Info size={16} style={{ marginRight: '0.5rem' }} /> View Full Profile
-                    </Button>
-                    <div style={{ marginLeft: 'auto' }}>
-                      <AvailableBadge>Available</AvailableBadge>
-                    </div>
-                  </ActionRow>
+                    <ActionRow>
+                      <InfoGrid>
+                        <div><MessageSquare size={16} /> {reviewCount} patient reviews</div>
+                      </InfoGrid>
+
+                      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                        <AvailableBadge>Available</AvailableBadge>
+                        {loggedInUser?.role === 'patient' && (
+                          <Button onClick={(e) => { e.stopPropagation(); navigate(`/patient/book/${doctor.id}`, { state: { doctor } }); }} style={{ background: '#2563eb', color: 'white', padding: '0.5rem 1.5rem' }}>
+                            Book Appointment
+                          </Button>
+                        )}
+                      </div>
+                    </ActionRow>
+                  </MainInfo>
                 </DoctorCard>
               );
             })

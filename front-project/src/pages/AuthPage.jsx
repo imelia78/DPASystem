@@ -10,6 +10,7 @@ import { authService, clientService, doctorService } from '../services/api';
 import { PROCEDURE_TYPES } from '../config/constants';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../components/ui/LanguageSwitcher';
+import { parseApiError } from '../utils/errorHandler';
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(20px); }
@@ -209,9 +210,10 @@ const AuthPage = () => {
           const profileRes = await clientService.getMe();
           localStorage.setItem('user', JSON.stringify({ role: 'patient', ...profileRes.data }));
           navigate('/patient/dashboard');
-        } else if (roles.includes('dpasystem.DOCTOR')) {
+        } else if (roles.includes('dpasystem.DOCTOR') || roles.includes('dpasystem.DOCTOR_PENDING')) {
           const profileRes = await doctorService.getMe();
-          localStorage.setItem('user', JSON.stringify({ role: 'doctor', ...profileRes.data }));
+          const verificationStatus = roles.includes('dpasystem.DOCTOR_PENDING') ? 'PENDING' : 'APPROVED';
+          localStorage.setItem('user', JSON.stringify({ role: 'doctor', verificationStatus, ...profileRes.data }));
           navigate('/doctor/dashboard'); // Or wherever doctor goes
         } else {
           setError('User role not recognized.');
@@ -238,16 +240,14 @@ const AuthPage = () => {
       }
     } catch (err) {
       console.error(err);
-      let errorMsg = 'An error occurred connecting to the server.';
-      if (err.response?.data) {
-        if (typeof err.response.data === 'string') {
-          errorMsg = err.response.data;
-        } else if (err.response.data.message) {
-          errorMsg = err.response.data.message;
-        } else if (err.response.data.error) {
-          errorMsg = err.response.data.error;
-        }
+      
+      let errorMsg = parseApiError(err);
+      
+      // Override specific messages for auth context if needed
+      if (errorMsg.includes('This resource (e.g. Email, Phone, Certificate) is already registered')) {
+        errorMsg = 'This account cannot be created because the Email, Phone Number, or Certificate is already registered in our system.';
       }
+
       setError(errorMsg);
       localStorage.removeItem('token');
       localStorage.removeItem('user');
@@ -377,8 +377,8 @@ const AuthPage = () => {
                     <Input required name="stateCertificateNumber" value={formData.stateCertificateNumber} onChange={handleInputChange} placeholder="CERT-12345" />
                   </FormGroup>
                   <FormGroup>
-                    <Label>{t('auth.bio')}</Label>
-                    <Input required name="professionalDescription" value={formData.professionalDescription} onChange={handleInputChange} placeholder="Brief bio..." />
+                    <Label>{t('auth.bio')} (Max 255 chars)</Label>
+                    <Input required name="professionalDescription" value={formData.professionalDescription} maxLength={255} onChange={handleInputChange} placeholder="Brief bio..." />
                   </FormGroup>
                 </>
               )}

@@ -4,8 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { format, isToday, isThisWeek } from 'date-fns';
 import { Calendar as CalendarIcon, Users, Star, TrendingUp, Clock, User as UserIcon } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
-import { doctorService } from '../../services/api';
+import { doctorService, clientService } from '../../services/api';
 import { useTranslation } from 'react-i18next';
+import { jwtDecode } from 'jwt-decode';
 
 const DashboardContainer = styled.div`
   display: flex;
@@ -271,7 +272,39 @@ const DoctorDashboard = () => {
     const fetchDoctor = async () => {
       try {
         const response = await doctorService.getMe();
-        setDoctor(response.data);
+        const doctorData = response.data;
+        
+        // Backend DTO is missing verificationStatus, so we infer it from the JWT
+        let verificationStatus = 'PENDING';
+        const token = localStorage.getItem('token');
+        if (token) {
+          const decoded = jwtDecode(token);
+          const roles = decoded.realm_access?.roles || [];
+          if (roles.includes('dpasystem.DOCTOR')) {
+            verificationStatus = 'APPROVED';
+          }
+        }
+        doctorData.verificationStatus = verificationStatus;
+        
+        // Enrich reviews with patient names
+        if (doctorData.reviews && doctorData.reviews.length > 0) {
+          const enrichedReviews = await Promise.all(doctorData.reviews.map(async (review) => {
+            try {
+              if (review.clientId) {
+                const clientRes = await clientService.getById(review.clientId);
+                if (clientRes.data) {
+                  return { ...review, patientName: `${clientRes.data.firstName} ${clientRes.data.lastName}` };
+                }
+              }
+            } catch (err) {
+              console.error("Failed to fetch client for review", err);
+            }
+            return { ...review, patientName: 'Patient' };
+          }));
+          doctorData.reviews = enrichedReviews;
+        }
+
+        setDoctor(doctorData);
       } catch (err) {
         console.error('Failed to fetch doctor', err);
         navigate('/');
@@ -284,6 +317,17 @@ const DoctorDashboard = () => {
 
   if (loading) return <DashboardContainer style={{ padding: '3rem', textAlign: 'center' }}>Loading dashboard...</DashboardContainer>;
   if (!doctor) return null;
+
+  if (doctor.verificationStatus === 'PENDING') {
+    return (
+      <DashboardContainer>
+        <Banner style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>
+          <h2>Account Pending Approval</h2>
+          <p>Your account is currently under review by our administration team. You will be able to manage your schedule and see patients once you are approved.</p>
+        </Banner>
+      </DashboardContainer>
+    );
+  }
 
   const lastName = doctor.lastName || 'Doctor';
   const appointments = doctor.appointments || [];
@@ -354,7 +398,7 @@ const DoctorDashboard = () => {
 
       <MainContentGrid>
         <SectionContainer>
-          <SectionTitle>{t('doctorDashboard.todaysSchedule')}</SectionTitle>
+          <SectionTitle>{t('doctorDashboard.upcomingSchedule', 'Upcoming Schedule')}</SectionTitle>
           
           {upcomingAppointments.length === 0 ? (
             <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>
@@ -371,7 +415,7 @@ const DoctorDashboard = () => {
                   </div>
                 </div>
                 <div className="right">
-                  <span className="time"><Clock size={14} /> {app.appointmentDateTime ? format(new Date(app.appointmentDateTime), 'hh:mm a') : 'TBD'}</span>
+                  <span className="time"><Clock size={14} /> {app.appointmentDateTime ? format(new Date(app.appointmentDateTime), 'MMM d, hh:mm a') : 'TBD'}</span>
                   <StatusPill status={app.appointmentStatus === 'CREATED' ? 'confirmed' : 'pending'}>
                     {app.appointmentStatus || 'pending'}
                   </StatusPill>
@@ -412,7 +456,7 @@ const DoctorDashboard = () => {
       <Banner>
         <h2>{t('doctorDashboard.manageSchedule')}</h2>
         <p>{t('doctorDashboard.manageSubtitle')}</p>
-        <WhiteButton>{t('doctorDashboard.manageAvailability')}</WhiteButton>
+        <WhiteButton onClick={() => navigate('/doctor/schedule')}>{t('doctorDashboard.manageAvailability')}</WhiteButton>
       </Banner>
 
     </DashboardContainer>

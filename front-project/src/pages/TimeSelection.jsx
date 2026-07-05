@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { appointmentService } from '../services/api';
+import { appointmentService, doctorService } from '../services/api';
 import { Button } from '../components/ui/Button';
 import { format, addDays } from 'date-fns';
+import { PROCEDURE_TYPES } from '../config/constants';
 import { ChevronLeft, Calendar as CalendarIcon, Clock, MapPin } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -82,7 +83,18 @@ const DateSelector = styled.div`
   padding-bottom: 1rem;
   
   &::-webkit-scrollbar {
-    height: 6px;
+    height: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: ${({ theme }) => theme.colors.surfaceHover || '#f1f5f9'};
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: ${({ theme }) => theme.colors.textMuted || '#94a3b8'};
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: ${({ theme }) => theme.colors.primary || '#2563eb'};
   }
 `;
 
@@ -144,7 +156,20 @@ const TimeSlot = styled.button`
   }
 `;
 
-const upcomingDates = Array.from({ length: 7 }, (_, i) => addDays(new Date(), i + 1));
+
+const getSlotInterval = (specialization) => {
+  const spec = PROCEDURE_TYPES.find(p => 
+    p.category.toUpperCase() === specialization.toUpperCase() || 
+    p.category.toUpperCase().replace(/\s+/g, '_') === specialization.toUpperCase()
+  );
+  
+  let maxDuration = 30; // default safe fallback
+  if (spec && spec.subtypes && spec.subtypes.length > 0) {
+    maxDuration = Math.max(...spec.subtypes.map(s => s.duration));
+  }
+  
+  return maxDuration + 15; // + 15 mins break
+};
 
 // Helper to safely parse Spring Boot's LocalDateTime serialization (Array or ISO string)
 const parseBackendDate = (dt) => {
@@ -161,7 +186,20 @@ const TimeSelection = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
-  const doctor = location.state?.doctor;
+  const [doctor, setDoctor] = useState(location.state?.doctor);
+  
+  useEffect(() => {
+    // Fetch live doctor data to ensure we have the most up-to-date appointments (in case doctor rescheduled/cancelled)
+    if (doctor?.id) {
+      doctorService.getById(doctor.id)
+        .then(res => {
+          if (res.data) setDoctor(res.data);
+        })
+        .catch(err => console.error('Failed to refresh doctor data', err));
+    }
+  }, []);
+  
+  const upcomingDates = useMemo(() => Array.from({ length: 30 }, (_, i) => addDays(new Date(), i + 1)), []);
   
   const [selectedDate, setSelectedDate] = useState(upcomingDates[0]);
   const [selectedTime, setSelectedTime] = useState(null);
@@ -179,8 +217,8 @@ const TimeSelection = () => {
     
     if (doctor.appointments && Array.isArray(doctor.appointments)) {
       doctor.appointments.forEach(app => {
-        // Skip cancelled/rejected appointments if needed, but for now block all
-        if (app.appointmentStatus === 'REJECTED') return;
+        // Skip cancelled/rejected appointments so those slots become available again
+        if (app.appointmentStatus === 'REJECTED' || app.appointmentStatus === 'CANCELLED') return;
         
         const appDate = parseBackendDate(app.appointmentDateTime);
         if (appDate && format(appDate, 'yyyy-MM-dd') === selectedDateStr) {
@@ -189,20 +227,31 @@ const TimeSelection = () => {
       });
     }
 
-    // Generate standard 30-min slots from 09:00 to 16:30
-    for (let hour = 9; hour < 17; hour++) {
-      for (let min of [0, 30]) {
-        const timeStr = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
-        const d = new Date();
-        d.setHours(hour, min, 0, 0);
-        
-        slots.push({
-          time: timeStr,
-          label: format(d, 'hh:mm a'),
-          available: !bookedTimes.has(timeStr)
-        });
-      }
+    // Generate dynamic slots based on specialty duration + 15 min break
+    const interval = getSlotInterval(doctor.specialization);
+    const startHour = 9;
+    const endHour = 17;
+
+    let currentMin = startHour * 60; // 9:00 in minutes
+    const endMin = endHour * 60; // 17:00 in minutes
+
+    while (currentMin + interval <= endMin) {
+      const h = Math.floor(currentMin / 60);
+      const m = currentMin % 60;
+      
+      const timeStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+      const d = new Date();
+      d.setHours(h, m, 0, 0);
+      
+      slots.push({
+        time: timeStr,
+        label: format(d, 'hh:mm a'),
+        available: !bookedTimes.has(timeStr)
+      });
+      
+      currentMin += interval;
     }
+    
     return slots;
   }, [selectedDate, doctor]);
 
@@ -227,12 +276,20 @@ const TimeSelection = () => {
       const dateTimeIso = `${dateString}T${selectedTime.time}:00`;
 
       // Structure AppointmentRequestDto
-      const requestDto = {
+      const spec = PROCEDURE_TYPES.find(p => 
+        p.category.toUpperCase() === doctor.specialization.toUpperCase() || 
+        p.category.toUpperCase().replace(/\s+/g, '_') === doctor.specialization.toUpperCase()
+      );
+      
+      let reqDuration = 30;
+      if (spec && spec.subtypes && spec.subtypes.length > 0) {
+        reqDuration = Math.max(...spec.subtypes.map(s => s.duration));
+      }
+        const requestDto = {
         dateTime: dateTimeIso,
         doctorId: doctor.id,
         clientId: client.id,
-        address: { city: "New York", district: "Downtown", street: "123 Medical Way" }, // Updated to match Swagger AddressDto
-        duration: 30 // standard duration for now
+        duration: reqDuration
       };
 
       await appointmentService.create(requestDto);
@@ -240,10 +297,9 @@ const TimeSelection = () => {
       navigate('/patient/success', { 
         state: { 
           doctorName: `Dr. ${doctor.lastName}`,
-          clinicName: doctor.clinicName || 'Clinic',
+          clinicName: doctor.clinicName || 'HealthBridge Center',
           date: format(selectedDate, 'MMM dd, yyyy'),
-          time: selectedTime.label,
-          address: '123 Medical Way, NY'
+          time: selectedTime.label
         } 
       });
     } catch (err) {
@@ -264,7 +320,6 @@ const TimeSelection = () => {
         <DocHeader>
           <h2>{t('timeSelection.bookAppointment')} {doctor.lastName}</h2>
         </DocHeader>
-        <InfoRow><MapPin size={18} /> {doctor.clinicName || 'HealthBridge Center'} — 123 Medical Way, NY</InfoRow>
         <InfoRow><CalendarIcon size={18} /> {t('timeSelection.selectDateTime')}</InfoRow>
       </InfoCard>
 

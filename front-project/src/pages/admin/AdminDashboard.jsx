@@ -5,6 +5,7 @@ import { doctorService, adminService } from '../../services/api';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { useTranslation } from 'react-i18next';
+import { extractAvatar } from '../../utils/avatarUtils';
 
 const PageContainer = styled.div`
   display: flex;
@@ -173,9 +174,22 @@ const AdminDashboard = () => {
 
   const fetchDoctors = async () => {
     try {
-      const res = await adminService.getAllDoctors(100, 0);
-      // Temporarily treating undefined verificationStatus as PENDING until backend is fixed
-      const pending = res.data.filter(d => !d.verificationStatus || d.verificationStatus === 'PENDING');
+      // The backend DoctorDto omits verificationStatus. 
+      // To reliably find PENDING doctors, we fetch ALL doctors and PUBLIC (Approved) doctors.
+      const [allRes, approvedRes] = await Promise.all([
+        adminService.getAllDoctors(100, 0),
+        doctorService.getAll(100, 0)
+      ]);
+      
+      const allDoctors = allRes.data || [];
+      const approvedDoctors = approvedRes.data || [];
+      const approvedIds = new Set(approvedDoctors.map(d => d.id));
+
+      // A doctor is PENDING if:
+      // 1. They are NOT in the approved list
+      // 2. They do NOT have an adminComment (meaning they aren't rejected)
+      const pending = allDoctors.filter(d => !approvedIds.has(d.id) && !d.adminComment);
+      
       setDoctors(pending);
     } catch (err) {
       console.error("Failed to fetch doctors", err);
@@ -188,6 +202,12 @@ const AdminDashboard = () => {
       setDoctors(prev => prev.filter(d => d.id !== id));
     } catch (err) {
       console.error("Failed to approve", err);
+      // If backend says already approved, remove from UI anyway
+      if (err.response?.data?.includes('already approved')) {
+        setDoctors(prev => prev.filter(d => d.id !== id));
+      } else {
+        alert("Failed to approve doctor. Please try again.");
+      }
     }
   };
 
@@ -236,7 +256,18 @@ const AdminDashboard = () => {
           <tbody>
             {filteredDoctors.map(doctor => (
               <Tr key={doctor.id}>
-                <Td>
+                <Td style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  {extractAvatar(doctor.professionalDescription).photoUrl ? (
+                    <img 
+                      src={extractAvatar(doctor.professionalDescription).photoUrl} 
+                      alt="Avatar" 
+                      style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} 
+                    />
+                  ) : (
+                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontWeight: 'bold' }}>
+                      {doctor.firstName?.[0] || 'D'}
+                    </div>
+                  )}
                   <strong>{t('patientDashboard.dr')} {doctor.firstName} {doctor.lastName}</strong>
                 </Td>
                 <Td>{doctor.specialization}</Td>
@@ -247,7 +278,7 @@ const AdminDashboard = () => {
                     <IconButton className="approve" onClick={() => handleApprove(doctor.id)} title={t('adminDashboard.approve')}>
                       <Check size={18} />
                     </IconButton>
-                    <IconButton className="reject" onClick={() => setRejectingDoctor(doctor)} title={t('adminDashboard.reject')}>
+                    <IconButton className="reject" onClick={() => { setRejectingDoctor(doctor); setRejectComment(''); }} title={t('adminDashboard.reject')}>
                       <X size={18} />
                     </IconButton>
                   </ActionButtons>

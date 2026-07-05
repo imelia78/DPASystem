@@ -37,12 +37,12 @@ export const clientService = {
   updateEmail: (id, email) => api.patch(`/clients/${id}/email`, { email })
 };
 
-// Doctors
 export const doctorService = {
   getByEmail: (email) => api.get(`/doctors?email=${encodeURIComponent(email)}`),
   getMe: () => api.get('/doctors/me'),
   getAll: (pageSize = 100, pageNumber = 0) => api.get(`/doctors?pageSize=${pageSize}&pageNumber=${pageNumber}`),
-  getById: (id) => api.get(`/doctors/${id}`)
+  getById: (id) => api.get(`/doctors/${id}`),
+  update: (doctorData) => api.put('/doctors', doctorData)
 };
 
 // Appointments

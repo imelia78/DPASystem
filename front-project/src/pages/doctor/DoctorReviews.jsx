@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Star, MessageSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { reviewService } from '../../services/api';
+import { reviewService, clientService } from '../../services/api';
 
 const PageContainer = styled.div`
   max-width: 800px;
@@ -110,7 +110,23 @@ const DoctorReviews = () => {
         if (userStr) {
           const user = JSON.parse(userStr);
           const response = await reviewService.getByDoctor(user.id);
-          setReviews(response.data || []);
+          const rawReviews = response.data || [];
+          
+          const enrichedReviews = await Promise.all(rawReviews.map(async (review) => {
+            try {
+              if (review.clientId) {
+                const clientRes = await clientService.getById(review.clientId);
+                if (clientRes.data) {
+                  return { ...review, patientName: `${clientRes.data.firstName} ${clientRes.data.lastName}` };
+                }
+              }
+            } catch (err) {
+              console.error("Failed to fetch client for review", err);
+            }
+            return { ...review, patientName: 'Patient' };
+          }));
+          
+          setReviews(enrichedReviews);
         }
       } catch (error) {
         console.error("Failed to fetch reviews", error);

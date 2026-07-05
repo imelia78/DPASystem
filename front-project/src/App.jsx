@@ -13,6 +13,7 @@ import AdminLayout from './components/layout/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import DoctorLayout from './components/layout/DoctorLayout';
 import DoctorDashboard from './pages/doctor/DoctorDashboard';
+import DoctorSchedule from './pages/doctor/DoctorSchedule';
 import DoctorOwnProfile from './pages/doctor/DoctorProfile';
 import DoctorReviews from './pages/doctor/DoctorReviews';
 
@@ -37,13 +38,14 @@ function App() {
         {/* Admin Routes */}
         <Route element={<AdminLayout />}>
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          {/* We use dashboard as the primary approval page for now */}
-          <Route path="/admin/doctors" element={<AdminDashboard />} />
         </Route>
         
         {/* Doctor Routes */}
         <Route element={<DoctorLayout />}>
           <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
+          <Route path="/doctor/schedule" element={<DoctorSchedule />} />
+          <Route path="/doctor/browse" element={<DoctorList />} />
+          <Route path="/doctor/view-profile/:id" element={<DoctorProfile />} />
           <Route path="/doctor/profile" element={<DoctorOwnProfile />} />
           <Route path="/doctor/reviews" element={<DoctorReviews />} />
         </Route>

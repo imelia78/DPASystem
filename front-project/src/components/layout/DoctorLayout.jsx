@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
 import styled from 'styled-components';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { User, LogOut, Stethoscope, LayoutDashboard, CalendarDays } from 'lucide-react';
+import { User, Users, LogOut, Stethoscope, LayoutDashboard, CalendarDays } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../ui/LanguageSwitcher';
+import { extractAvatar } from '../../utils/avatarUtils';
 
 const LayoutContainer = styled.div`
   display: flex;
@@ -125,19 +126,30 @@ const DoctorLayout = () => {
           </LogoContainer>
           
           <NavLinks>
+            {user.verificationStatus === 'APPROVED' && (
+              <>
+                <NavLink 
+                  active={location.pathname.includes('/dashboard')}
+                  onClick={() => navigate('/doctor/dashboard')}
+                >
+                  <LayoutDashboard size={18} />
+                  {t('nav.dashboard')}
+                </NavLink>
+                <NavLink 
+                  active={location.pathname.includes('/schedule')}
+                  onClick={() => navigate('/doctor/schedule')}
+                >
+                  <CalendarDays size={18} />
+                  {t('nav.manageSchedule')}
+                </NavLink>
+              </>
+            )}
             <NavLink 
-              active={location.pathname.includes('/dashboard')}
-              onClick={() => navigate('/doctor/dashboard')}
+              active={location.pathname.includes('/doctor/browse')}
+              onClick={() => navigate('/doctor/browse')}
             >
-              <LayoutDashboard size={18} />
-              {t('nav.dashboard')}
-            </NavLink>
-            <NavLink 
-              active={location.pathname.includes('/schedule')}
-              onClick={() => navigate('/doctor/dashboard')}
-            >
-              <CalendarDays size={18} />
-              {t('nav.manageSchedule')}
+              <Users size={18} />
+              Browse Doctors
             </NavLink>
           </NavLinks>
         </LeftSection>
@@ -145,7 +157,15 @@ const DoctorLayout = () => {
         <RightSection>
           <LanguageSwitcher />
           <UserProfile onClick={() => navigate('/doctor/profile')}>
-            <User size={18} />
+            {extractAvatar(user.professionalDescription).photoUrl ? (
+              <img 
+                src={extractAvatar(user.professionalDescription).photoUrl} 
+                alt="Avatar" 
+                style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} 
+              />
+            ) : (
+              <User size={18} />
+            )}
             Dr. {user.lastName || t('nav.profile')}
           </UserProfile>
           <LogoutButton onClick={handleLogout}>

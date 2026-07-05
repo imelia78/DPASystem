@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { User, Mail, Phone, Award, ShieldCheck, FileText, CheckCircle } from 'lucide-react';
+import { User, Mail, Phone, Award, ShieldCheck, FileText, CheckCircle, Edit2, X, Save } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { doctorService } from '../../services/api';
 import { useTranslation } from 'react-i18next';
+import { extractAvatar, buildBioWithAvatar } from '../../utils/avatarUtils';
+import { ImageCropperModal } from '../../components/ui/ImageCropperModal';
+import { parseApiError } from '../../utils/errorHandler';
+import { jwtDecode } from 'jwt-decode';
 
 const PageContainer = styled.div`
   max-width: 800px;
@@ -46,6 +50,30 @@ const Avatar = styled.div`
   font-size: 2.5rem;
   margin-top: -50px;
   margin-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &:hover::after {
+    content: 'Change';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    font-size: 0.75rem;
+    text-align: center;
+    padding: 0.25rem 0;
+  }
+`;
+
+const HiddenInput = styled.input`
+  display: none;
 `;
 
 const Grid = styled.div`
@@ -94,12 +122,31 @@ const DoctorProfile = () => {
   const { t } = useTranslation();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [cropperImageSrc, setCropperImageSrc] = useState(null);
+
+  // Bio Edit State
+  const [isEditingBio, setIsEditingBio] = useState(false);
+  const [editBioText, setEditBioText] = useState('');
+  const [savingBio, setSavingBio] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const response = await doctorService.getMe();
-        setUser(response.data);
+        
+        // Backend DTO is missing verificationStatus, so we infer it from the JWT
+        let verificationStatus = 'PENDING';
+        const token = localStorage.getItem('token');
+        if (token) {
+          const decoded = jwtDecode(token);
+          const roles = decoded.realm_access?.roles || [];
+          if (roles.includes('dpasystem.DOCTOR')) {
+            verificationStatus = 'APPROVED';
+          }
+        }
+        
+        setUser({ ...response.data, verificationStatus });
       } catch (error) {
         console.error('Failed to fetch profile', error);
       } finally {
@@ -109,6 +156,80 @@ const DoctorProfile = () => {
     fetchUser();
   }, []);
 
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Clear the input so selecting the same file again triggers onChange
+    e.target.value = null;
+
+    const reader = new FileReader();
+    reader.addEventListener('load', () => {
+      setCropperImageSrc(reader.result);
+    });
+    reader.readAsDataURL(file);
+  };
+
+  const handleCroppedUpload = async (croppedBlob) => {
+    setCropperImageSrc(null);
+    setUploadingPhoto(true);
+    try {
+      const formData = new FormData();
+      // append the cropped blob as 'image' with a filename
+      formData.append('image', croppedBlob, 'avatar.jpg');
+      
+      const imgbbRes = await fetch('https://api.imgbb.com/1/upload?key=ee4c7b520f59c4adc7ea79c5bcd2e993', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await imgbbRes.json();
+      
+      if (data.success) {
+        const newPhotoUrl = data.data.url;
+        const { cleanBio } = extractAvatar(user.professionalDescription);
+        const newBio = buildBioWithAvatar(cleanBio, newPhotoUrl);
+        
+        const payload = { ...user, professionalDescription: newBio };
+        await doctorService.update(payload);
+        
+        setUser(payload);
+        localStorage.setItem('user', JSON.stringify({ role: 'doctor', ...payload }));
+      } else {
+        alert("Upload failed.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert(parseApiError(err, "An error occurred during upload."));
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleSaveBio = async () => {
+    if (editBioText.length > 200) {
+      alert("Bio is too long!");
+      return;
+    }
+    
+    setSavingBio(true);
+    try {
+      const currentAvatarUrl = extractAvatar(user.professionalDescription).photoUrl;
+      const newFullBio = buildBioWithAvatar(editBioText, currentAvatarUrl);
+      
+      const payload = { ...user, professionalDescription: newFullBio };
+      await doctorService.update(payload);
+      
+      setUser(payload);
+      localStorage.setItem('user', JSON.stringify({ role: 'doctor', ...payload }));
+      setIsEditingBio(false);
+    } catch (err) {
+      console.error(err);
+      alert(parseApiError(err, "Failed to update bio."));
+    } finally {
+      setSavingBio(false);
+    }
+  };
+
   if (loading) return <PageContainer style={{ padding: '3rem', textAlign: 'center' }}>Loading profile...</PageContainer>;
   if (!user) return null;
 
@@ -117,9 +238,16 @@ const DoctorProfile = () => {
       <ProfileCard>
         <HeaderBanner />
         <ProfileContent>
-          <Avatar>
-            <User size={48} />
-          </Avatar>
+          <label>
+            <Avatar style={{ opacity: uploadingPhoto ? 0.5 : 1 }}>
+              {extractAvatar(user?.professionalDescription).photoUrl ? (
+                <img src={extractAvatar(user.professionalDescription).photoUrl} alt="Avatar" />
+              ) : (
+                <User size={48} />
+              )}
+            </Avatar>
+            <HiddenInput type="file" accept="image/*" onChange={handleFileSelect} disabled={uploadingPhoto} />
+          </label>
           
           <h1 style={{ marginBottom: '0.25rem' }}>{t('patientDashboard.dr')} {user.firstName || 'First'} {user.lastName || 'Last'}</h1>
           <p style={{ color: '#64748b', marginBottom: '2rem' }}>{user.specialization || t('doctorProfileSelf.defaultSpecialization')}</p>
@@ -146,25 +274,99 @@ const DoctorProfile = () => {
             </InfoGroup>
             
             <InfoGroup style={{ gridColumn: '1 / -1' }}>
-              <Label><FileText size={16} /> {t('doctorProfileSelf.professionalDescription')}</Label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Label><FileText size={16} /> {t('doctorProfileSelf.professionalDescription')}</Label>
+                {!isEditingBio && (
+                  <button 
+                    onClick={() => {
+                      setEditBioText(extractAvatar(user?.professionalDescription).cleanBio || '');
+                      setIsEditingBio(true);
+                    }}
+                    style={{ background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.85rem', fontWeight: '600' }}
+                  >
+                    <Edit2 size={14} /> Edit
+                  </button>
+                )}
+              </div>
+              
               <ValueBox style={{ minHeight: '100px' }}>
-                {user.professionalDescription || t('doctorProfileSelf.defaultDescription')}
+                {isEditingBio ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <textarea 
+                      value={editBioText}
+                      onChange={(e) => setEditBioText(e.target.value)}
+                      maxLength={200}
+                      rows={4}
+                      style={{ 
+                        width: '100%', 
+                        padding: '0.5rem', 
+                        borderRadius: '6px', 
+                        border: '1px solid #cbd5e1',
+                        fontFamily: 'inherit',
+                        resize: 'vertical'
+                      }}
+                      placeholder="Write a brief bio (max 200 characters)..."
+                    />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.8rem', color: editBioText.length >= 200 ? '#ef4444' : '#64748b' }}>
+                        {editBioText.length} / 200 chars
+                      </span>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <Button 
+                          variant="outline" 
+                          size="small" 
+                          onClick={() => setIsEditingBio(false)}
+                          disabled={savingBio}
+                          style={{ padding: '0.25rem 0.5rem' }}
+                        >
+                          <X size={14} /> Cancel
+                        </Button>
+                        <Button 
+                          size="small" 
+                          onClick={handleSaveBio}
+                          disabled={savingBio}
+                          style={{ padding: '0.25rem 0.5rem' }}
+                        >
+                          <Save size={14} /> {savingBio ? 'Saving...' : 'Save'}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  extractAvatar(user?.professionalDescription).cleanBio || t('doctorProfileSelf.defaultDescription')
+                )}
               </ValueBox>
             </InfoGroup>
           </Grid>
 
           {/* Verification Status */}
-          <AdminCommentBox>
-            <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#047857', marginBottom: '0.5rem' }}>
-              <CheckCircle size={20} /> {t('doctorProfileSelf.verified')}
-            </h3>
-            <p style={{ color: '#065f46', fontSize: '0.95rem' }}>
-              {t('doctorProfileSelf.adminComment')} <i>{t('doctorProfileSelf.adminCommentDefault')}</i>
-            </p>
-          </AdminCommentBox>
+          {user.verificationStatus === 'APPROVED' ? (
+            <AdminCommentBox>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#047857', margin: 0 }}>
+                <CheckCircle size={20} /> {t('doctorProfileSelf.verified')}
+              </h3>
+            </AdminCommentBox>
+          ) : (
+            <AdminCommentBox style={{ background: 'rgba(245, 158, 11, 0.1)', borderColor: '#f59e0b' }}>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#b45309', margin: 0 }}>
+                Pending Verification
+              </h3>
+              <p style={{ color: '#92400e', fontSize: '0.95rem', marginTop: '0.5rem' }}>
+                Your profile is currently under administrative review.
+              </p>
+            </AdminCommentBox>
+          )}
           
         </ProfileContent>
       </ProfileCard>
+
+      {cropperImageSrc && (
+        <ImageCropperModal 
+          imageSrc={cropperImageSrc} 
+          onCropComplete={handleCroppedUpload} 
+          onCancel={() => setCropperImageSrc(null)} 
+        />
+      )}
     </PageContainer>
   );
 };

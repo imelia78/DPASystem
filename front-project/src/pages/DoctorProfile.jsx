@@ -5,6 +5,7 @@ import { doctorService } from '../services/api';
 import { Button } from '../components/ui/Button';
 import { Star, CheckCircle2, ChevronLeft, Calendar } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { extractAvatar } from '../utils/avatarUtils';
 
 const PageContainer = styled.div`
   display: flex;
@@ -64,6 +65,13 @@ const Avatar = styled.div`
   font-weight: 700;
   color: ${({ theme }) => theme.colors.primary};
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 `;
 
 const ProfileInfo = styled.div`
@@ -134,6 +142,7 @@ const DoctorProfile = () => {
   const { t } = useTranslation();
   const [doctor, setDoctor] = useState(null);
   const [loading, setLoading] = useState(true);
+  const loggedInUser = JSON.parse(localStorage.getItem('user') || '{}');
 
   useEffect(() => {
     const fetchDoctor = async () => {
@@ -164,7 +173,13 @@ const DoctorProfile = () => {
       </BackButton>
 
       <ProfileCard>
-        <Avatar>{doctor.firstName?.[0] || 'D'}{doctor.lastName?.[0] || 'R'}</Avatar>
+        <Avatar>
+          {extractAvatar(doctor.professionalDescription).photoUrl ? (
+            <img src={extractAvatar(doctor.professionalDescription).photoUrl} alt="Avatar" />
+          ) : (
+            <>{doctor.firstName?.[0] || 'D'}{doctor.lastName?.[0] || 'R'}</>
+          )}
+        </Avatar>
         <ProfileInfo>
           <h1>{t('patientDashboard.dr')} {doctor.firstName} {doctor.lastName}</h1>
           <div className="specialty">{doctor.specialization}</div>
@@ -176,18 +191,20 @@ const DoctorProfile = () => {
             </div>
           </StatsGrid>
 
-          <Button 
-            style={{ alignSelf: 'flex-start', marginTop: '0.5rem', padding: '1rem 2rem' }}
-            onClick={() => navigate(`/patient/book/${doctor.id}`, { state: { doctor } })}
-          >
-            <Calendar size={18} /> {t('doctorProfile.bookAppointment')}
-          </Button>
+          {loggedInUser?.role === 'patient' && (
+            <Button 
+              style={{ alignSelf: 'flex-start', marginTop: '0.5rem', padding: '1rem 2rem' }}
+              onClick={() => navigate(`/patient/book/${doctor.id}`, { state: { doctor } })}
+            >
+              <Calendar size={18} /> {t('doctorProfile.bookAppointment')}
+            </Button>
+          )}
         </ProfileInfo>
       </ProfileCard>
 
       <Section>
         <h2>{t('doctorProfile.about')}</h2>
-        <p>{doctor.professionalDescription || t('doctorProfile.noDescription')}</p>
+        <p>{extractAvatar(doctor.professionalDescription).cleanBio || t('doctorProfile.noDescription')}</p>
       </Section>
     </PageContainer>
   );

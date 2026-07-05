@@ -144,13 +144,6 @@ const AdminLayout = () => {
             <LayoutDashboard size={20} />
             {t('nav.dashboard')}
           </NavItem>
-          <NavItem 
-            $active={location.pathname === '/admin/doctors'}
-            onClick={() => navigate('/admin/doctors')}
-          >
-            <Users size={20} />
-            {t('admin.pendingApprovals')}
-          </NavItem>
         </NavList>
 
         <SidebarFooter>
@@ -164,7 +157,7 @@ const AdminLayout = () => {
       <MainContent>
         <Topbar>
           <h1>
-            {location.pathname === '/admin/dashboard' ? t('admin.overview') : t('admin.doctorApprovals')}
+            {t('admin.overview')}
           </h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <LanguageSwitcher />

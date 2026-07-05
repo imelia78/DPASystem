@@ -94,9 +94,6 @@ const SuccessPage = () => {
           <DetailRow>
             <Building2 size={24} /> <strong>{t('success.clinic')}</strong> {data.clinicName || 'HealthBridge Center'}
           </DetailRow>
-          <DetailRow>
-            <MapPin size={24} /> <strong>{t('success.address')}</strong> {data.address || '123 Medical Way'}
-          </DetailRow>
         </DetailsBox>
 
         <Button fullWidth onClick={() => navigate('/patient/dashboard')} style={{ padding: '1rem' }}>
