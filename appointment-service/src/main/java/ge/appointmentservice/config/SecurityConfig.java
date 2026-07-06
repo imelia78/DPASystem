@@ -21,7 +21,11 @@ public class SecurityConfig {
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(
                         auth -> auth
-                                .requestMatchers("/api/v1/auth/**").permitAll()
+                                .requestMatchers(
+                                        "/api/v1/auth/**",
+                                        "/swagger-ui/**",
+                                        "/v3/api-docs/**"
+                                ).permitAll()
                                 .requestMatchers("/actuator/**", "/api/v1/admin/**").hasAuthority("dpasystem.ADMIN")
                                 .anyRequest().authenticated()
                 )

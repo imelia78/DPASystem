@@ -58,7 +58,7 @@ public class Doctor {
     private String adminComment;
 
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String professionalDescription;
 
 
