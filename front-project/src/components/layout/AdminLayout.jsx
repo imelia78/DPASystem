@@ -31,11 +31,19 @@ const SidebarHeader = styled.div`
 `;
 
 const NavList = styled.nav`
-  flex: 1;
-  padding: 2rem 1rem;
+  width: 250px;
+  background: #0f172a;
+  color: #94a3b8;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  padding: 2rem 0;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    padding: 1rem 0;
+    flex-direction: row;
+    overflow-x: auto;
+  }
 `;
 
 const NavItem = styled.div`
@@ -84,16 +92,30 @@ const LogoutButton = styled.button`
 
 const MainContent = styled.main`
   flex: 1;
-  padding: 3rem 4rem;
+  padding: 2rem;
   overflow-y: auto;
-  height: 100vh;
+  background: #f8fafc;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 `;
 
 const Topbar = styled.header`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 3rem;
+  padding: 1rem 2rem;
+  background: #1e293b;
+  color: white;
+  border-bottom: 1px solid #334155;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    flex-direction: column;
+  }
   
   h1 {
     font-size: 2rem;

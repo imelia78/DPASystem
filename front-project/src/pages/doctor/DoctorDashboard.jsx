@@ -7,6 +7,7 @@ import { Button } from '../../components/ui/Button';
 import { doctorService, clientService } from '../../services/api';
 import { useTranslation } from 'react-i18next';
 import { jwtDecode } from 'jwt-decode';
+import { parseBackendDate } from '../../utils/dateUtils';
 
 const DashboardContainer = styled.div`
   display: flex;
@@ -333,14 +334,14 @@ const DoctorDashboard = () => {
   const appointments = doctor.appointments || [];
   const reviews = doctor.reviews || [];
 
-  const todaysAppointments = appointments.filter(a => a.appointmentDateTime && isToday(new Date(a.appointmentDateTime)));
+  const todaysAppointments = appointments.filter(a => a.appointmentDateTime && isToday(parseBackendDate(a.appointmentDateTime)));
   const uniquePatients = new Set(appointments.map(a => a.client?.id).filter(Boolean));
   const averageRating = doctor.averageRating ? doctor.averageRating.toFixed(1) : '0.0';
-  const thisWeekAppointments = appointments.filter(a => a.appointmentDateTime && isThisWeek(new Date(a.appointmentDateTime)));
+  const thisWeekAppointments = appointments.filter(a => a.appointmentDateTime && isThisWeek(parseBackendDate(a.appointmentDateTime)));
 
   const upcomingAppointments = appointments
     .filter(a => ['CREATED', 'CONFIRMED', 'PENDING'].includes(a.appointmentStatus) || !a.appointmentStatus)
-    .sort((a, b) => new Date(a.appointmentDateTime) - new Date(b.appointmentDateTime))
+    .sort((a, b) => parseBackendDate(a.appointmentDateTime) - parseBackendDate(b.appointmentDateTime))
     .slice(0, 5);
 
   const recentReviews = [...reviews]
@@ -415,7 +416,7 @@ const DoctorDashboard = () => {
                   </div>
                 </div>
                 <div className="right">
-                  <span className="time"><Clock size={14} /> {app.appointmentDateTime ? format(new Date(app.appointmentDateTime), 'MMM d, hh:mm a') : 'TBD'}</span>
+                  <span className="time"><Clock size={14} /> {app.appointmentDateTime ? format(parseBackendDate(app.appointmentDateTime), 'MMM d, hh:mm a') : 'TBD'}</span>
                   <StatusPill status={app.appointmentStatus === 'CREATED' ? 'confirmed' : 'pending'}>
                     {app.appointmentStatus || 'pending'}
                   </StatusPill>

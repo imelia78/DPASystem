@@ -10,6 +10,7 @@ import { appointmentService, reviewService } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { extractAvatar } from '../utils/avatarUtils';
 import { parseApiError } from '../utils/errorHandler';
+import { parseBackendDate } from '../utils/dateUtils';
 
 const DashboardContainer = styled.div`
   display: flex;
@@ -281,14 +282,16 @@ const PatientDashboard = () => {
           if (activeTab === 'upcoming') {
             const upcoming = allApps.filter(app => {
               const isPending = app.appointmentStatus === 'CREATED' || app.appointmentStatus === 'CONFIRMED';
-              const isFuture = new Date(app.appointmentDateTime) >= new Date();
+              const appDate = parseBackendDate(app.appointmentDateTime);
+              const isFuture = appDate && appDate >= new Date();
               return isPending && isFuture;
             });
             setAppointments(upcoming);
           } else {
             const completed = allApps.filter(app => {
               const isFinished = app.appointmentStatus === 'COMPLETED' || app.appointmentStatus === 'CANCELLED';
-              const isPast = new Date(app.appointmentDateTime) < new Date();
+              const appDate = parseBackendDate(app.appointmentDateTime);
+              const isPast = appDate && appDate < new Date();
               return isFinished || isPast;
             });
             setAppointments(completed);
@@ -380,8 +383,8 @@ const PatientDashboard = () => {
               <ListItem key={app.id}>
                 <DoctorInfo>
                   <Avatar>
-                    {app.doctor && extractAvatar(app.doctor.professionalDescription).photoUrl ? (
-                      <img src={extractAvatar(app.doctor.professionalDescription).photoUrl} alt="Doctor" />
+                    {app.doctor && app.doctor.professionalDescription ? (
+                      <img src={extractAvatar(app.doctor.professionalDescription).photoUrl || ''} alt="Doctor" />
                     ) : (
                       <UserIcon size={24} />
                     )}
@@ -392,8 +395,8 @@ const PatientDashboard = () => {
                   </DoctorDetails>
                 </DoctorInfo>
                 <TimeInfo>
-                  <h4>{app.appointmentDateTime ? format(new Date(app.appointmentDateTime), 'yyyy-MM-dd') : 'TBD'}</h4>
-                  <p>{app.appointmentDateTime ? format(new Date(app.appointmentDateTime), 'hh:mm a') : 'TBD'}</p>
+                  <h4>{app.appointmentDateTime ? format(parseBackendDate(app.appointmentDateTime), 'yyyy-MM-dd') : 'TBD'}</h4>
+                  <p>{app.appointmentDateTime ? format(parseBackendDate(app.appointmentDateTime), 'hh:mm a') : 'TBD'}</p>
                   
                   {/* Show Review Button or Status */}
                   {activeTab === 'completed' && app.appointmentStatus === 'COMPLETED' && (

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useParams, useNavigate } from 'react-router-dom';
-import { doctorService } from '../services/api';
+import { doctorService, reviewService } from '../services/api';
 import { Button } from '../components/ui/Button';
 import { Star, CheckCircle2, ChevronLeft, Calendar } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -136,26 +136,73 @@ const Section = styled.div`
   }
 `;
 
+const ReviewsSection = styled(Section)`
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+`;
+
+const ReviewCard = styled.div`
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.md};
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+`;
+
+const ReviewHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  
+  .reviewer {
+    font-weight: 600;
+    color: ${({ theme }) => theme.colors.text};
+  }
+  
+  .date {
+    font-size: 0.85rem;
+    color: ${({ theme }) => theme.colors.textMuted};
+  }
+`;
+
+const ReviewRating = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #f59e0b;
+  margin-bottom: 0.75rem;
+`;
+
 const DoctorProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [doctor, setDoctor] = useState(null);
+  const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const loggedInUser = JSON.parse(localStorage.getItem('user') || '{}');
 
   useEffect(() => {
-    const fetchDoctor = async () => {
+    const fetchDoctorAndReviews = async () => {
       try {
-        const response = await doctorService.getById(id);
-        setDoctor(response.data);
+        const [docRes, revRes] = await Promise.all([
+          doctorService.getById(id),
+          reviewService.getByDoctor(id)
+        ]);
+        setDoctor(docRes.data);
+        if (revRes.data && Array.isArray(revRes.data)) {
+          // If the backend returns paginated content, handle it:
+          setReviews(revRes.data.content || revRes.data);
+        }
       } catch (err) {
         console.error("Failed to fetch doctor details", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchDoctor();
+    fetchDoctorAndReviews();
   }, [id]);
 
   if (loading) return <PageContainer>{t('doctorProfile.loading')}</PageContainer>;
@@ -206,6 +253,35 @@ const DoctorProfile = () => {
         <h2>{t('doctorProfile.about')}</h2>
         <p>{extractAvatar(doctor.professionalDescription).cleanBio || t('doctorProfile.noDescription')}</p>
       </Section>
+
+      <ReviewsSection>
+        <h2>Patient Reviews</h2>
+        {reviews.length === 0 ? (
+          <p>No reviews yet for this doctor.</p>
+        ) : (
+          reviews.map((review, idx) => (
+            <ReviewCard key={idx}>
+              <ReviewHeader>
+                <div className="reviewer">{review.clientName || review.clientFullName || 'Anonymous Patient'}</div>
+                <div className="date">
+                  {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : ''}
+                </div>
+              </ReviewHeader>
+              <ReviewRating>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star 
+                    key={i} 
+                    size={14} 
+                    fill={i < (review.rating || 5) ? "#f59e0b" : "transparent"} 
+                    color={i < (review.rating || 5) ? "#f59e0b" : "#d1d5db"} 
+                  />
+                ))}
+              </ReviewRating>
+              <p>{review.comment}</p>
+            </ReviewCard>
+          ))
+        )}
+      </ReviewsSection>
     </PageContainer>
   );
 };

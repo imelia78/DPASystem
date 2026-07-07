@@ -270,6 +270,16 @@ const CTASection = styled.section`
 const LandingPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const userStr = localStorage.getItem('user');
+  const user = userStr ? JSON.parse(userStr) : null;
+
+  const handleGetStarted = () => {
+    if (user) {
+      navigate(user.role === 'doctor' ? '/doctor/dashboard' : user.role === 'admin' ? '/admin/dashboard' : '/patient/dashboard');
+    } else {
+      navigate('/auth?mode=register');
+    }
+  };
 
   return (
     <PageContainer>
@@ -280,8 +290,8 @@ const LandingPage = () => {
         </Logo>
         <NavActions>
           <LanguageSwitcher />
-          <Button variant="ghost" onClick={() => navigate('/auth?mode=login')}>{t('landing.signIn')}</Button>
-          <Button onClick={() => navigate('/auth?mode=register')}>{t('nav.getStarted')}</Button>
+          {!user && <Button variant="ghost" onClick={() => navigate('/auth?mode=login')}>{t('landing.signIn')}</Button>}
+          <Button onClick={handleGetStarted}>{user ? 'Dashboard' : t('nav.getStarted')}</Button>
         </NavActions>
       </Navbar>
 
@@ -290,12 +300,14 @@ const LandingPage = () => {
           <h1>{t('landing.heroTitle1')}<br/>{t('landing.heroTitle2')} <span>{t('landing.heroTitleHighlight')}</span></h1>
           <p>{t('landing.heroSubtitle')}</p>
           <ButtonGroup>
-            <Button onClick={() => navigate('/auth?mode=register')} style={{ padding: '1rem 2rem' }}>
-              {t('landing.bookAppointment')} &rarr;
+            <Button onClick={handleGetStarted} style={{ padding: '1rem 2rem' }}>
+              {user ? 'Go to Dashboard' : t('landing.bookAppointment')} &rarr;
             </Button>
-            <Button variant="secondary" onClick={() => navigate('/auth?mode=login')} style={{ padding: '1rem 2rem' }}>
-              {t('landing.signIn')}
-            </Button>
+            {!user && (
+              <Button variant="secondary" onClick={() => navigate('/auth?mode=login')} style={{ padding: '1rem 2rem' }}>
+                {t('landing.signIn')}
+              </Button>
+            )}
           </ButtonGroup>
         </HeroText>
 

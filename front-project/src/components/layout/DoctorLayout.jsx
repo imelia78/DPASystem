@@ -19,6 +19,13 @@ const Navbar = styled.nav`
   padding: 1.5rem 3rem;
   background: ${({ theme }) => theme.colors.surface};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    flex-direction: column;
+  }
 `;
 
 const LogoContainer = styled.div`
@@ -35,6 +42,12 @@ const LeftSection = styled.div`
   display: flex;
   align-items: center;
   gap: 3rem;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    gap: 1rem;
+    justify-content: center;
+  }
 `;
 
 const NavLinks = styled.div`
@@ -62,6 +75,12 @@ const RightSection = styled.div`
   display: flex;
   align-items: center;
   gap: 2rem;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    gap: 1rem;
+    justify-content: center;
+  }
 `;
 
 const UserProfile = styled.div`
@@ -97,6 +116,10 @@ const MainContent = styled.main`
   max-width: 1400px;
   width: 100%;
   margin: 0 auto;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 `;
 
 const DoctorLayout = () => {

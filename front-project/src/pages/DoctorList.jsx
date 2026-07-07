@@ -61,11 +61,18 @@ const ControlsContainer = styled.div`
   border: 1px solid ${({ theme }) => theme.colors.border};
   align-items: center;
   flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    gap: 0.75rem;
+    flex-direction: column;
+    align-items: stretch;
+  }
 `;
 
 const SearchBox = styled.div`
   flex: 1;
-  min-width: 300px;
+  min-width: 200px;
   position: relative;
   
   svg {
@@ -356,10 +363,10 @@ const DoctorList = () => {
           {t('doctorList.availableWithin')}
         </CheckboxLabel>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: 'auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
           <Filter size={20} color="#94a3b8" />
           <Select 
-            style={{ width: '200px' }} 
+            style={{ width: '100%', maxWidth: '200px' }} 
             value={sortOption}
             onChange={(e) => setSortOption(e.target.value)}
           >
