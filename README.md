@@ -119,7 +119,7 @@ No local JDK or database installation is required — all services run inside co
 The repository includes a pre-configured Keycloak realm export file:
 
 ```
-keycloak/healthbridge-realm.json
+keycloak/dpasystem-realm.json
 ```
 
 This file contains all realm settings, client definitions, roles (`dpasystem.DOCTOR`, `dpasystem.DOCTOR_PENDING`), and scope mappings required for the platform to function. It is imported automatically on first Keycloak startup via the Docker Compose configuration — no manual steps needed.
@@ -142,14 +142,14 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://keycloak:8080/realms/healthbridge
+          issuer-uri: http://keycloak:8080/realms/dpasystem
 
 keycloak:
   client-secret: YOUR_CLIENT_SECRET_HERE   # <-- set this value
 ```
 
 The client secret can be found in the Keycloak Admin Console after startup:  
-**Keycloak Admin → Realm: healthbridge → Clients → appointment-service → Credentials → Client Secret**
+**Keycloak Admin → Realm: dpasystem → Clients → appointment-service → Credentials → Client Secret**
 
 ---
 
