@@ -1,0 +1,66 @@
+services:
+  app:
+    build: .
+    image: dpasystem-api:latest
+    container_name: DPASystem_application
+    ports:
+      - '127.0.0.1:8080:8080'
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:postgresql://db:5432/postgres
+      DB_USER: ilia
+      DB_PASSWORD: dpasystem
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - auth_net
+
+  db:
+    image: 'postgres:16'
+    container_name: DPASystem_db
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=ilia
+      - POSTGRES_PASSWORD=dpasystem
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U ilia -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - auth_net
+
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.2
+    container_name: keycloak
+    command: start-dev
+    environment:
+      KC_DB: postgres
+      KC_DB_URL_HOST: db
+      KC_DB_URL_DATABASE: postgres
+      KC_DB_USERNAME: ilia
+      KC_DB_PASSWORD: dpasystem
+      KC_HOSTNAME: localhost
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: dpasystem
+    ports:
+      - "127.0.0.1:9090:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - auth_net
+
+
+volumes:
+  postgres_data:
+
+networks:
+  auth_net:
+    driver: bridge

@@ -1,0 +1,24 @@
+
+
+services:
+  app:
+    build: .
+    image: dpasystem-api:latest
+    container_name: DPASystem_application
+    ports:
+      - '127.0.0.1:8080:8080'
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - DB_USER=ilia
+      - POSTGRES_DB=postgres
+      - DB_URL=jdbc:postgresql://db:5432/postgres
+      - DB_PASSWORD=dpasystem
+    depends_on:
+      - db
+
+  db:
+    image: 'postgres'
+    container_name: DPASystem_db
+    environment:
+      - POSTGRES_USER=ilia
+      - POSTGRES_PASSWORD=dpasystem
